@@ -4,6 +4,11 @@ import os
 import cohere
 from cohere import ClassifyExample
 from flask import Flask, request
+from langchain import hub
+from langchain_anthropic import ChatAnthropic
+from langchain_core.output_parsers import StrOutputParser
+
+from config import ANTI_VISION, BEHAVIORS, COMMENTS, SKILLS, VISION, YOUR_PAST
 
 app = Flask(__name__)
 
@@ -14,6 +19,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 co = cohere.Client(os.getenv("COHERE_API_KEY"))
+
+prompt = hub.pull("x_comment_prompt")
+model = ChatAnthropic(
+    model="claude-3-5-sonnet-20240620", api_key=os.getenv("ANTHROPIC_API_KEY")
+)
+parser = StrOutputParser()
+chain = prompt | model | parser
 
 
 @app.route("/interesting_topic_classification", methods=["POST"])
@@ -114,6 +126,35 @@ def interesting_topic_classifier():
         logger.debug(f"Confidence levels: {response.classifications}")
 
         return {"classification": response.classifications[0].prediction}
+
+    except Exception as e:
+        logger.error(f"An error occurred: {str(e)}", exc_info=True)
+        return {"error": str(e)}, 500
+
+
+@app.route("/generate_comment", methods=["POST"])
+def generate_comment():
+    try:
+        data = request.get_json()
+        tweet = data.get("tweet")
+
+        if not tweet:
+            logger.warning("No tweet provided in the request")
+            return {"error": "No tweet provided"}, 400
+
+        comments = chain.invoke(
+            {
+                "YOUR_PAST": YOUR_PAST,
+                "SKILLS": SKILLS,
+                "BEHAVIORS": BEHAVIORS,
+                "ANTI_VISION": ANTI_VISION,
+                "VISION": VISION,
+                "COMMENTS": COMMENTS,
+                "BIG_ACCOUNT_POST": tweet,
+            }
+        )
+
+        return {"comments": comments}
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
