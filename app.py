@@ -7,6 +7,7 @@ from flask import Flask, request
 from langchain import hub
 from langchain_anthropic import ChatAnthropic
 from langchain_core.output_parsers import XMLOutputParser
+import tweepy
 
 from config import ANTI_VISION, BEHAVIORS, COMMENTS, SKILLS, VISION, YOUR_PAST
 
@@ -156,6 +157,46 @@ def generate_comment():
 
         return {"comments": comments['root'][1]}
 
+    except Exception as e:
+        logger.error(f"An error occurred: {str(e)}", exc_info=True)
+        return {"error": str(e)}, 500
+
+
+def get_tweet_statistics(tweet_url):
+    try:
+        # Extract tweet ID from URL
+        tweet_id = tweet_url.split('/')[-1].split('?')[0]
+        
+        # Initialize Twitter API client
+        client = tweepy.Client(os.getenv("X_API_KEY"))
+        
+        # Fetch tweet data
+        response = client.get_tweets([tweet_id], tweet_fields=["public_metrics"])
+        
+        if not response.data:
+            return {"error": "Tweet not found or inaccessible"}
+        
+        public_metrics = response.data[0].public_metrics
+        
+        # Extract and return public metrics
+        return public_metrics
+    
+    except Exception as e:
+        logger.error(f"Error fetching tweet statistics: {str(e)}", exc_info=True)
+        return {"error": str(e)}
+
+@app.route("/tweet_statistics", methods=["POST"])
+def tweet_statistics():
+    try:
+        data = request.get_json()
+        tweet_url = data.get("tweet_url")
+        
+        if not tweet_url:
+            return {"error": "No tweet URL provided"}, 400
+        
+        stats = get_tweet_statistics(tweet_url)
+        return stats
+    
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
         return {"error": str(e)}, 500
