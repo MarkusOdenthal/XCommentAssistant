@@ -6,7 +6,7 @@ from cohere import ClassifyExample
 from flask import Flask, request
 from langchain import hub
 from langchain_anthropic import ChatAnthropic
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import XMLOutputParser
 
 from config import ANTI_VISION, BEHAVIORS, COMMENTS, SKILLS, VISION, YOUR_PAST
 
@@ -24,7 +24,7 @@ prompt = hub.pull("x_comment_prompt")
 model = ChatAnthropic(
     model="claude-3-5-sonnet-20240620", api_key=os.getenv("ANTHROPIC_API_KEY"), temperature=0.2
 )
-parser = StrOutputParser()
+parser = XMLOutputParser()
 chain = prompt | model | parser
 
 
@@ -154,7 +154,7 @@ def generate_comment():
             }
         )
 
-        return {"comments": comments}
+        return {"comments": comments['root'][1]}
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
