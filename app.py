@@ -22,7 +22,7 @@ co = cohere.Client(os.getenv("COHERE_API_KEY"))
 
 prompt = hub.pull("x_comment_prompt")
 model = ChatAnthropic(
-    model="claude-3-5-sonnet-20240620", api_key=os.getenv("ANTHROPIC_API_KEY")
+    model="claude-3-5-sonnet-20240620", api_key=os.getenv("ANTHROPIC_API_KEY"), temperature=0.2
 )
 parser = StrOutputParser()
 chain = prompt | model | parser
