@@ -2,12 +2,12 @@ import logging
 import os
 
 import cohere
+import tweepy
 from cohere import ClassifyExample
 from flask import Flask, request
 from langchain import hub
 from langchain_anthropic import ChatAnthropic
 from langchain_core.output_parsers import XMLOutputParser
-import tweepy
 
 from config import ANTI_VISION, BEHAVIORS, COMMENTS, SKILLS, VISION, YOUR_PAST
 
@@ -23,7 +23,9 @@ co = cohere.Client(os.getenv("COHERE_API_KEY"))
 
 prompt = hub.pull("x_comment_prompt")
 model = ChatAnthropic(
-    model="claude-3-5-sonnet-20240620", api_key=os.getenv("ANTHROPIC_API_KEY"), temperature=0.2
+    model="claude-3-5-sonnet-20240620",
+    api_key=os.getenv("ANTHROPIC_API_KEY"),
+    temperature=0.2,
 )
 parser = XMLOutputParser()
 chain = prompt | model | parser
@@ -155,7 +157,7 @@ def generate_comment():
             }
         )
 
-        return {"comments": comments['root'][1]}
+        return {"comments": comments["root"][1]}
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
@@ -165,35 +167,47 @@ def generate_comment():
 def get_tweet_statistics(tweet_url):
     try:
         # Extract tweet ID from URL
-        tweet_id = tweet_url.split('/')[-1].split('?')[0]
-        
+        tweet_id = tweet_url.split("/")[-1].split("?")[0]
+
         # Initialize Twitter API client
-        client = tweepy.Client(bearer_token=os.getenv("X_API_KEY"), access_token="753027473193873408-mIUqL1gnafk9pBwMWZ3EpjePkq1YIcv", access_token_secret="0re8eIQw2kTlNodOcJhdCC6aaP4KPsQdqMUxEnZBm5VF9", consumer_key="2a9bhq8zkcZdcgfN2DT5XKUEF", consumer_secret="6r4e9EywL3enstzqLvSRSonDaNHOefm1fvjO8v3ZM8aHsFWjxP")
+        client = tweepy.Client(
+            bearer_token=os.getenv("X_BEARER_TOKEN"),
+            access_token=os.getenv("X_ACCESS_TOKEN"),
+            access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET"),
+        )
         # Fetch tweet data
-        response = client.get_tweets([tweet_id], tweet_fields=["public_metrics", "non_public_metrics"], user_auth=True)
-        
+        response = client.get_tweets(
+            [tweet_id],
+            tweet_fields=["public_metrics", "non_public_metrics"],
+            user_auth=True,
+        )
+
         if not response.data:
             return {"error": "Tweet not found or inaccessible"}
-        
-        metrics = {**response.data[0].public_metrics, **response.data[0].non_public_metrics}
+
+        metrics = {
+            **response.data[0].public_metrics,
+            **response.data[0].non_public_metrics,
+        }
         return metrics
-    
+
     except Exception as e:
         logger.error(f"Error fetching tweet statistics: {str(e)}", exc_info=True)
         return {"error": str(e)}
+
 
 @app.route("/tweet_statistics", methods=["POST"])
 def tweet_statistics():
     try:
         data = request.get_json()
         tweet_url = data.get("tweet_url")
-        
+
         if not tweet_url:
             return {"error": "No tweet URL provided"}, 400
-        
+
         stats = get_tweet_statistics(tweet_url)
         return stats
-    
+
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
         return {"error": str(e)}, 500
