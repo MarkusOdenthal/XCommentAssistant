@@ -168,18 +168,15 @@ def get_tweet_statistics(tweet_url):
         tweet_id = tweet_url.split('/')[-1].split('?')[0]
         
         # Initialize Twitter API client
-        client = tweepy.Client(os.getenv("X_API_KEY"))
-        
+        client = tweepy.Client(bearer_token=os.getenv("X_API_KEY"), access_token="753027473193873408-mIUqL1gnafk9pBwMWZ3EpjePkq1YIcv", access_token_secret="0re8eIQw2kTlNodOcJhdCC6aaP4KPsQdqMUxEnZBm5VF9", consumer_key="2a9bhq8zkcZdcgfN2DT5XKUEF", consumer_secret="6r4e9EywL3enstzqLvSRSonDaNHOefm1fvjO8v3ZM8aHsFWjxP")
         # Fetch tweet data
-        response = client.get_tweets([tweet_id], tweet_fields=["public_metrics"])
+        response = client.get_tweets([tweet_id], tweet_fields=["public_metrics", "non_public_metrics"], user_auth=True)
         
         if not response.data:
             return {"error": "Tweet not found or inaccessible"}
         
-        public_metrics = response.data[0].public_metrics
-        
-        # Extract and return public metrics
-        return public_metrics
+        metrics = {**response.data[0].public_metrics, **response.data[0].non_public_metrics}
+        return metrics
     
     except Exception as e:
         logger.error(f"Error fetching tweet statistics: {str(e)}", exc_info=True)

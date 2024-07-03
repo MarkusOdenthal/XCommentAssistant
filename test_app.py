@@ -7,7 +7,7 @@ class TestApp(unittest.TestCase):
          response = tester.post(
              "/tweet_statistics",
              json={
-                 "tweet_url": "https://twitter.com/MarkusOdenthal/status/1791014365061329301"
+                 "tweet_url": "https://x.com/MarkusOdenthal/status/1805601967076696390"
              },
              headers={'Content-Type': 'application/json'}
          )
