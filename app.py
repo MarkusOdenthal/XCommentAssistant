@@ -174,6 +174,8 @@ def get_tweet_statistics(tweet_url):
             bearer_token=os.getenv("X_BEARER_TOKEN"),
             access_token=os.getenv("X_ACCESS_TOKEN"),
             access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET"),
+            consumer_key=os.getenv("X_ACCESS_CONSUMER_KEY"),
+            consumer_secret=os.getenv("X_ACCESS_CONSUMER_SECRET")
         )
         # Fetch tweet data
         response = client.get_tweets(
