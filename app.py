@@ -126,9 +126,9 @@ def interesting_topic_classifier():
         )
 
         logger.info(f"Classification result: {response.classifications[0].prediction}")
-        logger.debug(f"Confidence levels: {response.classifications}")
+        logger.debug(f"Confidence levels: {response.classifications[0].confidence}")
 
-        return {"classification": response.classifications[0].prediction}
+        return {"classification": response.classifications[0].prediction, "confidence": response.classifications[0].confidence}
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
