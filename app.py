@@ -1,6 +1,6 @@
 import logging
 import os
-
+import requests
 import cohere
 import tweepy
 from cohere import ClassifyExample
@@ -75,8 +75,23 @@ def add_label_data_to_topic_classification():
             outputs=[{"label": label}],
             dataset_name="XCommentClassification",
         )
-
-        return {"message": "Example added successfully"}
+        try:
+            response = requests.post(os.getenv("RENDER_DEPLOYMENT_HOOK_URL"))
+            response.raise_for_status()
+            
+            return {
+                "message": "Example added successfully and deployment triggered",
+                "deployment_status": "initiated"
+            }, 200
+        except requests.RequestException as e:
+            # Log the error for internal tracking
+            app.logger.error(f"Deployment hook failed: {str(e)}")
+            
+            return {
+                "message": "Example added successfully, but deployment trigger failed",
+                "deployment_status": "failed",
+                "error": str(e)
+            }, 207  # Returning 207 Multi-Status to indicate partial success
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
