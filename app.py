@@ -8,7 +8,7 @@ from flask import Flask, request
 from langchain import hub
 from langchain_anthropic import ChatAnthropic
 from langchain_core.output_parsers import XMLOutputParser
-from langsmith import Client, traceable, trace
+from langsmith import Client, traceable
 from langsmith.run_helpers import get_current_run_tree
 
 from config import ANTI_VISION, BEHAVIORS, COMMENTS, SKILLS, VISION, YOUR_PAST
@@ -40,13 +40,13 @@ model = ChatAnthropic(
 parser = XMLOutputParser()
 chain = prompt | model | parser
 
-@traceable(run_type="chain", name="topic_classification",)
+
+@traceable(
+    run_type="chain",
+    name="topic_classification",
+)
 def topic_classification(post: str):
-    response = co.classify(
-        model="embed-english-v3.0",
-        inputs=[post],
-        examples=examples
-    )
+    response = co.classify(model="embed-english-v3.0", inputs=[post], examples=examples)
     prediction = response.classifications[0].prediction
     confidence = response.classifications[0].confidence
 
@@ -58,6 +58,30 @@ def topic_classification(post: str):
         score=confidence,
     )
     return prediction
+
+
+@app.route("/add_label_data_to_topic_classification", methods=["POST"])
+def add_label_data_to_topic_classification():
+    try:
+        data = request.get_json()
+        post = data.get("post")
+        label = data.get("label")
+
+        if not post or not label:
+            return {"error": "Post and label are required"}, 400
+
+        _ = ls_client.create_examples(
+            inputs={"text": post},
+            outputs={"label": label},
+            dataset_name="XCommentClassification",
+        )
+
+        return {"message": "Example added successfully"}
+
+    except Exception as e:
+        logger.error(f"An error occurred: {str(e)}", exc_info=True)
+        return {"error": str(e)}, 500
+
 
 @app.route("/interesting_topic_classification", methods=["POST"])
 def interesting_topic_classifier():
@@ -124,7 +148,7 @@ def get_tweet_statistics(tweet_url):
             access_token=os.getenv("X_ACCESS_TOKEN"),
             access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET"),
             consumer_key=os.getenv("X_ACCESS_CONSUMER_KEY"),
-            consumer_secret=os.getenv("X_ACCESS_CONSUMER_SECRET")
+            consumer_secret=os.getenv("X_ACCESS_CONSUMER_SECRET"),
         )
         # Fetch tweet data
         response = client.get_tweets(
