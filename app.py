@@ -63,6 +63,7 @@ def topic_classification(post: str):
 
 @app.route("/add_label_data_to_topic_classification", methods=["POST"])
 def add_label_data_to_topic_classification():
+    ls_client = Client()
     try:
         data = request.get_json()
         post = data.get("post")
