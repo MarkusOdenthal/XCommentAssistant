@@ -71,8 +71,8 @@ def add_label_data_to_topic_classification():
             return {"error": "Post and label are required"}, 400
 
         _ = ls_client.create_examples(
-            inputs={"text": post},
-            outputs={"label": label},
+            inputs=[{"text": post}], 
+            outputs=[{"label": label}],
             dataset_name="XCommentClassification",
         )
 
