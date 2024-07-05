@@ -46,6 +46,7 @@ chain = prompt | model | parser
     name="topic_classification",
 )
 def topic_classification(post: str):
+    app.logger.info(f"Number of Examples: {len(examples)}")
     response = co.classify(model="embed-english-v3.0", inputs=[post], examples=examples)
     prediction = response.classifications[0].prediction
     confidence = response.classifications[0].confidence
