@@ -52,14 +52,38 @@ VISION = """I am a successful, independent content creator who works no more tha
 
 Through social media and my newsletter 'Actualized Personal Growth,' I share my personal journey and show my audience how they can use AI to become generalists and unlock their full potential. I create a supportive community where people can share their experiences, learn from each other, and find encouragement on their path to personal development. Additionally, I spend a lot of time with Lea and my two little ones, Oskar and Wilma, maintaining close and loving relationships and enjoying shared activities. This balance of work, health, financial stability, and family time allows me to lead a fulfilled and stress-free life."""
 
-COMMENTS = """Comment 1:
+COMMENTS = """<post_1>
+There will be two classes of people in the future.
+
+The LLM savvy and the LLM clueless
+
+The LLM savvy will understand the strengths of different LLMs, will know how to apply them in their jobs and personal lives, use them prolifically, and experience huge career and productivity gains.
+
+The LLM clueless class will barely know what is happening, claim AI is dangerous, and slowly become obsolete.
+
+There will be a great divide between these two classes. Even bigger than the rich and the poor of today
+</post_1> 
+<comment_1>
 We are entering a second renaissance.
 
 The generalist who knows how to use tools (LLM) will win.
 
 The specialist will lose.
+</comment_1>
 
-Comment 2:
+<post_2>
+Top people set clear goals:
+
+• They outline what they want
+• The write everything down
+• They make detailed plans
+• They track their progress
+
+Unsuccessful people leave it all in their head
+
+And let their head talk themselves out of it...
+</post_2>
+<comment_2>
 100%.
 
 What also helps me is writing down my:
@@ -68,8 +92,20 @@ What also helps me is writing down my:
 • Vision: Things I want as part of my future
 
 Then I can break it down into goals.
+</comment_2>
 
-Comment 3:
+<post_3>
+LLMs Are Great Levelers! 
+
+Google search up-skilled millions and helped us level up to the so called experts of yester years. 
+
+You could instantly fact check them in minutes, prove or dis-prove them and go toe to toe! 
+
+LLMs take this up a notch and uplevel our skills - from basic English speaking to coding and expert research, LLMs equalize the playing field! 
+
+Overall this is a big deal for our entire species. We will no longer have a huge resource constraint on stellar talent as more people move from the above average bracket into the expert bracket  and from the beginner bracket to the mid-level overnight!
+</post_3>
+<comment_3>
 Yes, LLMs enable real-time learning, eliminating the need
 for lengthy degrees.
 
@@ -79,21 +115,17 @@ problems.
 This accelerates skill acquisition across various fields.
 
 If you are a generalist, you will win.
+</comment_3>
 
-Post 4:
+<post_4>
 It took me a year to hit 1,000 followers and 18 months to make my first dollar.
 Keep going. The start is supposed to suck.
-Comment 4:
+</post_4>
+<comment_4>
 The start is fun because you can suck while nobody's watching 
+</comment_4>
 
-Post 5:
-The advice "you are the niche" is why so many people struggle to build digital audiences/businesses. Because they begin their journey thinking THEY are what's most important—when really, it's the opposite.
-The reader/customer is the niche. Not you.
-Your past self is your niche.
-Comment 5:
-A better explanation is:
-
-Post 6:
+<post_5>
 If you feel stuck.
 Don't worry about making the right next move.
 Just take action on something.
@@ -101,36 +133,153 @@ Action breeds momentum.
 Momentum breeds results.
 Results breed confidence.
 Confidence breeds progress.
-Comment 6:
+</post_5>
+<comment_5>
 That’s what I do when I’m overwhelmed with ideas.
 
 Just taking a step and then analyzing is super helpful.
+</comment_5>
 
-Post 7:
+<post_6>
 If you can read, write, learn, build, fail, and teach on a consistent basis, without getting distracted, you shouldn't have a problem with money, meaning, or mental clarity.
-Comment 7:
+</post_6>
+<comment_6>
 Most can do it for a short period of time.
 
 But sustaining it is another conversation.
+</comment_6>
 
-Post 8:
+<post_7>
 When you can't stop having ideas. When you can't stop thinking about a project. When you can't pull yourself away from your work. When you remember that you're supposed to eat. When you are wide awake when you're supposed to sleep. That's when you know. You've found it.
-Comment 8:
+</post_7>
+<comment_7>
 Find your passion again.
 Think about your dreams.
 The ones you see when it's late at night.
 This is what you're meant to do.
+</comment_7>
 
-Post 9:
+<post_8>
 Remember:
 Emotions are a temporary emotional wave that normalize with time.
 When negative, stay mindful and don’t make big decisions that could come back to bit you.
 When positive, use them to your advantage. Build. Create. Enjoy.
-Comment 9:
+</post_8>
+<comment_8>
 Your feelings don't last forever.
 
 But the way you handle them can change your life.
 
 Try to let go of bad feelings.
 
-What helps me is journaling."""
+What helps me is journaling.
+</comment_8>
+
+<post_9>
+Over the last 6 months, we have seen 
+
+AI generated
+
+- audiobooks 
+- influencers on instagram 
+- commercials 
+- songs 
+- novels 
+- proteins
+- documents 
+- reviews, SEO content farms
+- code and agents 
+
+The quality of these generated artifacts is as good, if not better than what humans are able to produce! 
+
+This is just in the last 6 months! Imagine what happens in the next 2 years
+</post_9>
+<comment_9>
+As data scientist I've seen this shift firsthand.
+
+But here's the thing: 
+AI isn't just replacing. It's empowering.
+
+The real magic? 
+Becoming a generalist who can harness these tools across fields.
+</comment_9>
+
+<post_10>
+The Path To LLMs Becoming Software Engineers 
+
+LLM will slowly progress to become software engineers in the coming months
+
+The already have the ability to write great code, but they lack context and understanding of the environment 
+
+It will be a steady progression over time, but the first stop will be LLMs that write tests 
+
+After that we will see LLMs 
+
+-  understand jira tickets and fix minor bugs 
+
+-  write front-end code for simple pages in the context of an existing code base 
+
+-  build simple websites 
+
+- understand the environment and implement CRUD operations 
+
+-  move to to more complex backend operations 
+
+- train other LLMs
+</post_10>
+<comment_10>
+As a data scientist, I've seen this coming.  
+
+Our Job will change. Less coding.  
+
+What I like. It freeing up time for creative problem-solving. 
+
+That's where the real value lies. 
+
+LLMs won't replace us. They'll supercharge us.
+</comment_10>
+
+<post_11>
+Soon we are going to have several AI run services firms 
+
+AI law firms 
+AI doctors
+AI design firms 
+AI software consulting etc.
+
+These firms will charge a fraction of human run firms will only employ a handful of real humans! 
+
+First it will be white collar services. Followed by services that require physical labor like plumbing, electrical, dentistry, surgery, spa etc…
+</post_11>
+<comment_11>
+Expand your skillset. Because the future favors the adaptable generalist.
+
+It's an opportunity for personal growth.
+
+I've experienced this shift from traditional roles to AI-focused work.
+
+And trust me, adapting is key. Embrace AI tools.
+</comment_11>
+
+<post_12>
+I turned ChatGPT into my "idea generation" intern:
+
+I feed it a topic I want to explore.
+
+And it gives me 2 lists:
+
+1. The "actions" someone interested in the topic might have questions about
+
+2. A list of wider, general questions
+
+Then I sit down and just answer them one by one.
+</post_12>
+<comment_12>
+Love this approach!
+
+I've been using a similar technique for my "idea generation".
+
+But I add one more step: I ask ChatGPT to roleplay as my past self, struggling with the topic.
+
+This helps me create content that truly resonates with beginners.
+</comment_12>"""
