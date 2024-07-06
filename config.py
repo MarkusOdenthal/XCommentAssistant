@@ -282,4 +282,19 @@ I've been using a similar technique for my "idea generation".
 But I add one more step: I ask ChatGPT to roleplay as my past self, struggling with the topic.
 
 This helps me create content that truly resonates with beginners.
-</comment_12>"""
+</comment_12>
+
+<post_13>
+My productivity system is simple: don't do too many things at once, sleep no less than 7 hours per night, don't overindulge with caffeine, batch "similar" tasks, and reduce content consumption as much as possible to learn just-in-time, not just-in-case. Output over everything.
+</post_13>
+<comment_13>
+I’m using AI to reduce my content consumption.
+
+I built my Social Media Manager with AI.
+
+It finds the right posts where I can add value and sends me a message via Slack, like this post.
+
+This helps me to focus more. 
+
+No more endless scrolling to find the right post.
+</comment_13>"""
