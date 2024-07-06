@@ -35,7 +35,7 @@ prompt = hub.pull("x_comment_prompt")
 model = ChatAnthropic(
     model="claude-3-5-sonnet-20240620",
     api_key=os.getenv("ANTHROPIC_API_KEY"),
-    temperature=0.2,
+    temperature=0.5,
 )
 parser = XMLOutputParser()
 chain = prompt | model | parser
