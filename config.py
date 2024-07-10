@@ -1,3 +1,31 @@
+AUDIENCE = """The market segment I want to focus on is solopreneur who turn your knowledge into income. Being a solopreneur is about embracing your life. Solopreneurs approach there work in a way that prioritizes independence, flexibility, and fulfillment, rather than maximizing there financial gain.
+
+Here are 4 problems for each variable of the value equation, focused on solopreneurs who turn their knowledge into income, particularly in relation to AI:
+
+Dream Outcome:
+1. I'm afraid AI will make my expertise obsolete.
+2. I worry that AI-generated content will flood the market, devaluing my unique insights.
+3. I fear AI will replace the personal touch that my clients value in my services.
+4. I'm concerned that AI will reduce the demand for human-led coaching and consulting.
+
+Likelihood of achievement:
+1. AI is evolving so rapidly that I can't keep up with the changes in my field.
+2. I don't have the technical skills to integrate AI into my business effectively.
+3. Larger companies with more resources will outpace me in adopting AI technologies.
+4. I'm unsure how to differentiate myself from AI-powered competitors.
+
+Time Delay:
+1. Learning to use AI tools effectively will take too much time away from serving my clients.
+2. By the time I implement AI in my business, it may already be outdated.
+3. The ROI on AI investments seems too long-term for my immediate business needs.
+4. Adapting my services to complement AI will require a time-consuming overhaul of my business model.
+
+Effort and sacrifice:
+1. Integrating AI into my workflow will disrupt my current, comfortable routines.
+2. I'll need to invest significant money in AI tools and training, which might not pay off.
+3. Using AI effectively may require me to collaborate with tech experts, losing some of my independence.
+4. I'll have to constantly update my AI knowledge, taking time away from developing my core expertise."""
+
 YOUR_PAST = """- But I was also curious about automation. I always found it super interesting how we could use technology to automate work. Therefore, I did training as an electronics technician for automation technology, but when I finished my education after 3 years, I was not happy with my job. It was not what I expected. But the good thing was that I was able to get my high school diploma during this time in night school.
 - So I started to study electrical engineering in the hope of building robots or doing something with automation.
 - But this was actually not the case. Then I came across Udacity, and I came into first contact with data science around 10 years ago. The first time I felt like this is it. This is when I came to data science.

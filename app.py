@@ -11,7 +11,7 @@ from langchain_core.output_parsers import XMLOutputParser
 from langsmith import Client, traceable
 from langsmith.run_helpers import get_current_run_tree
 
-from config import ANTI_VISION, BEHAVIORS, COMMENTS, SKILLS, VISION, YOUR_PAST
+from config import AUDIENCE, ANTI_VISION, BEHAVIORS, COMMENTS, SKILLS, VISION, YOUR_PAST
 
 app = Flask(__name__)
 
@@ -136,7 +136,8 @@ def generate_comment():
             return {"error": "No tweet provided"}, 400
 
         comments = chain.invoke(
-            {
+            {   
+                "AUDIENCE": AUDIENCE,
                 "YOUR_PAST": YOUR_PAST,
                 "SKILLS": SKILLS,
                 "BEHAVIORS": BEHAVIORS,
