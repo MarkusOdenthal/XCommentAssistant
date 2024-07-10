@@ -24,12 +24,12 @@ logger = logging.getLogger(__name__)
 co = cohere.Client(os.getenv("COHERE_API_KEY"))
 
 ls_client = Client()
-label_data = ls_client.list_examples(dataset_name="XCommentClassification")
-examples = []
-for entry in label_data:
-    post = entry.inputs["text"]
-    label = entry.outputs["label"]
-    examples.append(ClassifyExample(text=post, label=label))
+# label_data = ls_client.list_examples(dataset_name="XCommentClassification")
+# examples = []
+# for entry in label_data:
+#     post = entry.inputs["text"]
+#     label = entry.outputs["label"]
+#     examples.append(ClassifyExample(text=post, label=label))
 
 prompt = hub.pull("x_comment_prompt")
 model = ChatAnthropic(
@@ -46,8 +46,9 @@ chain = prompt | model | parser
     name="topic_classification",
 )
 def topic_classification(post: str):
-    app.logger.info(f"Number of Examples: {len(examples)}")
-    response = co.classify(model="embed-english-v3.0", inputs=[post], examples=examples)
+    # app.logger.info(f"Number of Examples: {len(examples)}")
+    # response = co.classify(model="embed-english-v3.0", inputs=[post], examples=examples)
+    response = co.classify(model="dd74f49b-dfcb-45fc-ac5f-bafa23eff44b-ft", inputs=[post])
     prediction = response.classifications[0].prediction
     confidence = response.classifications[0].confidence
 
@@ -78,9 +79,9 @@ def add_label_data_to_topic_classification():
             dataset_name="XCommentClassification",
         )
         try:
-            response = requests.post(os.getenv("RENDER_DEPLOYMENT_HOOK_URL"))
-            response.raise_for_status()
-            
+            # response = requests.post(os.getenv("RENDER_DEPLOYMENT_HOOK_URL"))
+            # response.raise_for_status()
+            logger.info("Deployment paused for now")
             return {
                 "message": "Example added successfully and deployment triggered",
                 "deployment_status": "initiated"
