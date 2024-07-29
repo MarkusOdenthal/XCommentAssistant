@@ -24,6 +24,10 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+vector_store/
+results/
+*.csv
+*.jsonl
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -104,3 +108,6 @@ venv.bak/
 .mypy_cache/
 .vscode/launch.json
 .vscode/settings.json
+results/.DS_Store
+secrets.toml
+.DS_Store
