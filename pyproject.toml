@@ -14,7 +14,12 @@ langchain = "^0.2.6"
 langchainhub = "^0.1.20"
 langchain-anthropic = "^0.1.17"
 tweepy = "^4.14.0"
+pinecone = "^4.0.0"
 
+[tool.poetry.dev-dependencies]
+crawl4ai = { git = "https://github.com/unclecode/crawl4ai.git", branch = "main" }
+pandas = "^2.2.2"
+knowledge-storm = "^0.2.3"
 
 [build-system]
 requires = ["poetry-core"]

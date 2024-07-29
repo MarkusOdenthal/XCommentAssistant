@@ -9,6 +9,7 @@ def initialize_twitter_client() -> tweepy.Client:
         access_token_secret=os.getenv("X_ACCESS_TOKEN_SECRET"),
         consumer_key=os.getenv("X_ACCESS_CONSUMER_KEY"),
         consumer_secret=os.getenv("X_ACCESS_CONSUMER_SECRET"),
+        wait_on_rate_limit=True,
     )
 
 def get_user_id(client: tweepy.Client, username: str) -> int:
@@ -18,7 +19,7 @@ def get_user_id(client: tweepy.Client, username: str) -> int:
         print(f"Error fetching user ID: {e}")
         return None
 
-def get_user_replies(client: tweepy.Client, user_id: int, max_results: int = 5) -> List[tweepy.Tweet]:
+def get_user_replies(client: tweepy.Client, user_id: int) -> List[tweepy.Tweet]:
     all_replies = []
     pagination_token = None
 
@@ -27,8 +28,8 @@ def get_user_replies(client: tweepy.Client, user_id: int, max_results: int = 5) 
             user_tweets = client.get_users_tweets(
                 user_auth=True,
                 id=user_id,
-                since_id=1816880393502490753,# 1809235201580527860,  # hard set when run the first time for client
-                max_results=max_results,
+                max_results=100,
+                since_id=1808907574382637145,  # hard set when run the first time for client
                 exclude=["retweets"],
                 expansions=["referenced_tweets.id"],
                 tweet_fields=["created_at", "public_metrics", "conversation_id", "non_public_metrics"],
