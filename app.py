@@ -196,6 +196,7 @@ def generate_comment():
 def generate_comment_viral():
     try:
         data = request.get_json()
+        print(data)
         tweet = data.get("tweet")
         author_id = data.get("author_id")
         client = initialize_twitter_client()
