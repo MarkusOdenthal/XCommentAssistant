@@ -197,7 +197,7 @@ def generate_comment_viral():
     try:
         data = request.get_json()
         tweet = data.get("tweet")
-        author_id = data.get("author_id")
+        author_id = int(data.get("author_id"))
         client = initialize_twitter_client()
         user_info = get_user_info(client, user_id=author_id)
         if user_info:
@@ -227,23 +227,23 @@ def generate_comment_viral():
             example_comments_str += comment.metadata["reply"] + "\n"
             example_comments_str += "=" * 50 + "\n"
 
-        ideas = viral_social_media_comments_ideas_chain.invoke(
-            {
-                "AUDIENCE_INFO": AUDIENCE,
-                "PERSONAL_INFORMATION": PERSONAL_INFORMATION,
-                "CONTENT_TYPES": CONTENT_TYPES,
-                "EXAMPLE_COMMENTS": example_comments_str,
-                "INFLUENCER_BIO": f"Name: {user_name}\nBio: {user_description}",
-                "POST_TO_COMMENT_ON": tweet,
-            }
-        )
-
         example_posts = query_index("x-posts-markus-odenthal", tweet).matches
         example_posts_str = ""
         for idx, post in enumerate(example_posts):
             example_posts_str += f"Post: {1 + idx}\n"
             example_posts_str += post.metadata["text"] + "\n"
             example_posts_str += "-" * 50 + "\n"
+
+        ideas = viral_social_media_comments_ideas_chain.invoke(
+            {
+                "AUDIENCE_INFO": AUDIENCE,
+                "PERSONAL_INFORMATION": PERSONAL_INFORMATION,
+                "PREVIOUS_POSTS": example_posts_str,
+                "EXAMPLE_COMMENTS": example_comments_str,
+                "INFLUENCER_BIO": f"Name: {user_name}\nBio: {user_description}",
+                "POST_TO_COMMENT_ON": tweet,
+            }
+        )
 
         final_comment = viral_social_media_comments_refine_chain.invoke(
             {
