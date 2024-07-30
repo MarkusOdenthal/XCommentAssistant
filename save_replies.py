@@ -2,21 +2,23 @@ from x.x import initialize_twitter_client, get_user_id, get_user_replies, get_or
 from semantic_search.upsert_pinecone import upsert_data
 import re
 
+
 def remove_username_mention(text):
     return re.sub(r'^@\S+\s*', '', text)
 
-def main():
+def main(max_reply_id):
     client = initialize_twitter_client()
     username = "markusodenthal"
     user_id = get_user_id(client, username)
     
     if user_id:
-        replies = get_user_replies(client, user_id)
+        replies = get_user_replies(client, user_id, max_reply_id)
         original_posts = get_original_posts(client, replies)
         level1_interactions = filter_level1_interactions(replies, original_posts, user_id)
         
         # Now you can analyze level1_interactions
         data = []
+        
         for interaction in level1_interactions:
             metadata = {}
             metadata["original_post"] = interaction["original_post"].text
@@ -38,7 +40,21 @@ def main():
                 "text": interaction["original_post"].text,
                 "metadata": metadata
             })
+
+            # Track the maximum post.id
+            if max_reply_id is None or interaction["reply"].id > max_reply_id:
+                max_reply_id = interaction["reply"].id
+
         upsert_data("x-comments-markus-odenthal", data)
 
+        print(f"Max reply.id: {max_reply_id}")
+
 if __name__ == "__main__":
-    main()
+    max_reply_id = 1817247042105643500
+    max_reply_id += 1
+    main(max_reply_id)
+
+# last reply id: 1817247042105643500
+# Maybe print this always out and add then 1 to query the next day. But I need also to wait on day. 
+# actually I could simply this. I can work with start_time and end_time. And could work with time windows. This way
+# I could update not update data. I could make th

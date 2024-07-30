@@ -1,30 +1,4 @@
-AUDIENCE = """The market segment I want to focus on is solopreneur who turn your knowledge into income. Being a solopreneur is about embracing your life. Solopreneurs approach there work in a way that prioritizes independence, flexibility, and fulfillment, rather than maximizing there financial gain.
-
-Here are 4 problems for each variable of the value equation, focused on solopreneurs who turn their knowledge into income, particularly in relation to AI:
-
-Dream Outcome:
-1. I'm afraid AI will make my expertise obsolete.
-2. I worry that AI-generated content will flood the market, devaluing my unique insights.
-3. I fear AI will replace the personal touch that my clients value in my services.
-4. I'm concerned that AI will reduce the demand for human-led coaching and consulting.
-
-Likelihood of achievement:
-1. AI is evolving so rapidly that I can't keep up with the changes in my field.
-2. I don't have the technical skills to integrate AI into my business effectively.
-3. Larger companies with more resources will outpace me in adopting AI technologies.
-4. I'm unsure how to differentiate myself from AI-powered competitors.
-
-Time Delay:
-1. Learning to use AI tools effectively will take too much time away from serving my clients.
-2. By the time I implement AI in my business, it may already be outdated.
-3. The ROI on AI investments seems too long-term for my immediate business needs.
-4. Adapting my services to complement AI will require a time-consuming overhaul of my business model.
-
-Effort and sacrifice:
-1. Integrating AI into my workflow will disrupt my current, comfortable routines.
-2. I'll need to invest significant money in AI tools and training, which might not pay off.
-3. Using AI effectively may require me to collaborate with tech experts, losing some of my independence.
-4. I'll have to constantly update my AI knowledge, taking time away from developing my core expertise."""
+AUDIENCE = """Bootstrap SaaS founders who want to increase their product's visibility and user acquisition specifically through strategic engagement on X (formerly Twitter) by leveraging "build in public" content and targeted commenting under influential accounts in their niche."""
 
 YOUR_PAST = """- But I was also curious about automation. I always found it super interesting how we could use technology to automate work. Therefore, I did training as an electronics technician for automation technology, but when I finished my education after 3 years, I was not happy with my job. It was not what I expected. But the good thing was that I was able to get my high school diploma during this time in night school.
 - So I started to study electrical engineering in the hope of building robots or doing something with automation.
@@ -326,3 +300,50 @@ This helps me to focus more.
 
 No more endless scrolling to find the right post.
 </comment_13>"""
+
+PERSONAL_INFORMATION = """Name: Markus Odenthal
+Twitter Bio: I help bootstrap SaaS founders 10x visibility on X | Strategic commenting expert | 7Y+ in AI + Software Dev | Dad | Calisthenics practitioner.
+Current Follower Count: 800
+Some more information about me: I'm not a SaaS Founder but SaaS special Bootstrap SaaS companies are an Topic that really interested me. My Service is to help them to grow on X via commenting on Bigger Accounts."""
+
+CONTENT_TYPES = """1. Tips: Tips for bootstrap SaaS founders who want to increase their product's visibility on X through strategic engagement.
+2. Skills: Skills bootstrap SaaS founders need to build for effective "build in public" content creation on X (and how to build them).
+3. Tools: Tools bootstrap SaaS founders can use to optimize their engagement and commenting strategy on X.
+4. Traits: Traits of the most effective bootstrap SaaS founders who consistently generate visibility and user acquisition on X.
+5. Steps: Steps to increase your product's visibility on X as a bootstrap SaaS founder through targeted commenting.
+6. Goals: Goals you should set for yourself as a bootstrap SaaS founder who wants to leverage X for product visibility and user acquisition.
+7. Books: Books you should read as a bootstrap SaaS founder if you want to learn how to effectively "build in public" on X.
+8. Habits: Habits you should build if you are a bootstrap SaaS founder struggling to gain traction on X through strategic engagement.
+9. Stories: Stories of highly successful bootstrap SaaS founders who have used X to exponentially increase their product's visibility and user acquisition.
+10. Quotes: Quotes from the most successful SaaS entrepreneurs that will inspire you to build an audience on X and increase your product's visibility.
+11. Secrets: Secrets only bootstrap SaaS founders who leverage X for visibility know—and how you can apply them.
+12. Insights: Insights into how bootstrap SaaS founders leverage targeted commenting under influential accounts to drive traffic to their profiles.
+13. Benefits: The benefits of building an audience on X as a bootstrap SaaS founder who wants to increase product visibility and user acquisition.
+14. Lessons: Lessons you will learn as a bootstrap SaaS founder once you start to build in public and engage strategically on X.
+15. Reasons: Reasons you should build an audience on X if you're a bootstrap SaaS founder looking to increase visibility and user acquisition.
+16. Creators: X accounts you should follow if you are a bootstrap SaaS founder and want to learn the right way to build in public and engage strategically.
+17. Routines: Routines of the most successful X creators who are also bootstrap SaaS founders, leveraging the platform for visibility and user acquisition.
+18. Mistakes: Mistakes you should avoid if you're a bootstrap SaaS founder wanting to use X to build an audience and increase product visibility.
+19. Podcasts: Podcasts every bootstrap SaaS founder should listen to when learning how to build an audience on X through strategic engagement.
+20. Examples: Examples of bootstrap SaaS founders who have successfully built X audiences and increased their product's visibility through strategic commenting.
+21. Questions: Questions you should ask yourself when trying to figure out how to build a niche audience for yourself on X as a bootstrap SaaS founder.
+22. Inventions: Tools and platforms that have made it easy for bootstrap SaaS founders to start creating content, build an audience on X, and increase visibility.
+23. Templates: Tweet templates any bootstrap SaaS founder can use to start building in public, engaging strategically, and increasing product visibility on X.
+24. Resources: Resources every bootstrap SaaS founder should study to learn how to best use X for visibility and user acquisition.
+25. Challenges: Challenges all bootstrap SaaS founders run into when first starting out on X, trying to build an audience and increase visibility through strategic engagement.
+26. Companies: Bootstrap SaaS companies that have done a great job leveraging X for visibility and user acquisition through building in public and strategic engagement.
+27. Data Points: Metrics you should pay attention to as a bootstrap SaaS founder starting to build an audience on X and increase product visibility.
+28. Realizations: Realizations you will come to as a bootstrap SaaS founder after creating content, building an audience, and increasing your product's visibility on X for a full year.
+29. Frameworks: Frameworks to help you as a bootstrap SaaS founder overcome the fear of building in public and engaging strategically on X to increase visibility.
+30. Case Studies: In-depth case studies of bootstrap SaaS founders who successfully used X to dramatically increase their product's visibility and user acquisition."""
+
+COPYWRITING_STYLE = """When generating the reply, follow these guidelines:
+
+1. Avoid jargon, buzzwords, sales-y language, long sentences, flowery language (like: "Spot on, ..."), metaphors, analogies, clichés, and overused phrases.
+2. Use short, simple sentences for easier reading. Mix in some one or two-word sentences for impact, but vary sentence length to maintain interest.
+3. Start some sentences with transition words like "and," "but," "so," and "because" to improve flow and readability, even if it's not always grammatically correct.
+4. Write at an 8th-grade reading level, using clear, straightforward, and conversational language.
+5. Keep the tone engaging and add a touch of humor where appropriate.
+6. Prioritize clarity and readability over strict grammatical rules when it enhances the overall message and keeps readers engaged.
+
+Remember, the goal is to create a reply that's easy to understand, engaging to read, and effectively communicates the intended message."""

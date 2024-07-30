@@ -2,17 +2,17 @@ import unittest
 from app import app
 
 class TestApp(unittest.TestCase):
-    def test_add_label_data_to_topic_classification(self):
-        tester = app.test_client(self)
-        response = tester.post(
-            "/add_label_data_to_topic_classification",
-            json={
-                "post": "The road to success is paved with small, consistent efforts.",
-                "label": "uninteresting_topic"
-            },
-            headers={'Content-Type': 'application/json'}
-        )
-        self.assertEqual(response.status_code, 200)
+    # def test_add_label_data_to_topic_classification(self):
+    #     tester = app.test_client(self)
+    #     response = tester.post(
+    #         "/add_label_data_to_topic_classification",
+    #         json={
+    #             "post": "The road to success is paved with small, consistent efforts.",
+    #             "label": "uninteresting_topic"
+    #         },
+    #         headers={'Content-Type': 'application/json'}
+    #     )
+    #     self.assertEqual(response.status_code, 200)
     # def test_interesting_topic_classification(self):
     #      tester = app.test_client(self)
     #      response = tester.post(
@@ -37,16 +37,20 @@ class TestApp(unittest.TestCase):
     #      )
     #      self.assertEqual(response.status_code, 200)
 
-    # def test_generate_comment(self):
-    #     tester = app.test_client(self)
-    #     response = tester.post(
-    #         "/generate_comment",
-    #         json={
-    #             "tweet": "The road to success is paved with small, consistent efforts."
-    #         },
-    #         headers={'Content-Type': 'application/json'}
-    #     )
-    #     self.assertEqual(response.status_code, 200)
+    def test_generate_comment(self):
+        tweet = """"The truest way to decline is just to say, “it doesn’t feel right to me.”
+No explanation is necessary."
+
+@naval"""
+        tester = app.test_client(self)
+        response = tester.post(
+            "/generate_comment_viral",
+            json={
+                "tweet": tweet, "author_id": 1350036004556693506
+            },
+            headers={'Content-Type': 'application/json'}
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 if __name__ == "__main__":

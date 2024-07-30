@@ -19,7 +19,45 @@ def get_user_id(client: tweepy.Client, username: str) -> int:
         print(f"Error fetching user ID: {e}")
         return None
 
-def get_user_replies(client: tweepy.Client, user_id: int) -> List[tweepy.Tweet]:
+def get_user_info(client: tweepy.Client, username=None, user_id=None) -> tweepy.User:
+    try:
+        if username:
+            return client.get_user(screen_name=username, user_fields=["description"]).data
+        elif user_id:
+            return client.get_user(id=user_id, user_fields=["description"]).data
+    except tweepy.TweepError as e:
+        print(f"Error fetching user info: {e}")
+        return None
+
+def get_user_posts(client: tweepy.Client, user_id: int, max_post_id: int) -> List[tweepy.Tweet]:
+    all_posts = []
+    pagination_token = None
+
+    try:
+        while True:
+            user_tweets = client.get_users_tweets(
+                user_auth=True,
+                id=user_id,
+                max_results=100,
+                since_id=max_post_id,
+                exclude=["replies"],
+                tweet_fields=["created_at", "public_metrics", "conversation_id", "non_public_metrics"],
+                pagination_token=pagination_token
+            )
+            
+            if user_tweets.data:
+                all_posts.extend(user_tweets.data)
+
+            pagination_token = user_tweets.meta.get('next_token', None)
+            if not pagination_token:
+                break
+
+        return all_posts
+    except tweepy.TweepError as e:
+        print(f"Error fetching user tweets: {e}")
+        return []
+    
+def get_user_replies(client: tweepy.Client, user_id: int, max_reply_id: int) -> List[tweepy.Tweet]:
     all_replies = []
     pagination_token = None
 
@@ -29,7 +67,7 @@ def get_user_replies(client: tweepy.Client, user_id: int) -> List[tweepy.Tweet]:
                 user_auth=True,
                 id=user_id,
                 max_results=100,
-                since_id=1808907574382637145,  # hard set when run the first time for client
+                since_id=max_reply_id,  # hard set when run the first time for client
                 exclude=["retweets"],
                 expansions=["referenced_tweets.id"],
                 tweet_fields=["created_at", "public_metrics", "conversation_id", "non_public_metrics"],
