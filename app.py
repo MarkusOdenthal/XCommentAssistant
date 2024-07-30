@@ -201,6 +201,8 @@ def generate_comment_viral():
         author_id = data.get("author_id")
         client = initialize_twitter_client()
         user_info = get_user_info(client, user_id=author_id)
+        print(author_id)
+        print(user_info)
         user_name = user_info.get("name", "")
         user_description = user_info.get("description", "")
 
