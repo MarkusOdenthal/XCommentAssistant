@@ -34,13 +34,11 @@ def upsert_data(index_name, data):
     index.upsert(vectors=vectors)
     pass
 
+
 def query_index(index_name, query):
     index = pc.Index(index_name)
     x = embed([query])
     results = index.query(
-        vector=x[0],
-        top_k=10,
-        include_values=False,
-        include_metadata=True
+        vector=x[0], top_k=10, include_values=False, include_metadata=True
     )
     return results
