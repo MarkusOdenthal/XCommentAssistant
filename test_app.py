@@ -38,15 +38,12 @@ class TestApp(unittest.TestCase):
     #      self.assertEqual(response.status_code, 200)
 
     def test_generate_comment(self):
-        tweet = """"The truest way to decline is just to say, “it doesn’t feel right to me.”
-No explanation is necessary."
-
-@naval"""
+        tweet = """"3 dead-simple steps to write copy with AI:\n\n1. Pick a proven Sales Letter/Email/Hook\n2. Ask AI to turn this into a template with variables\n3. Feed the template back to ChatGPT, giving it the variables\n\nBoom.\n\nHigh-converting copy written in less than 10 minutes."""
         tester = app.test_client(self)
         response = tester.post(
             "/generate_comment_viral",
             json={
-                "tweet": tweet, "author_id": 1350036004556693506
+                "tweet": tweet, "author_id": 1286341463597604864
             },
             headers={'Content-Type': 'application/json'}
         )

@@ -1,9 +1,11 @@
 import logging
 import os
+from datetime import datetime
 
 import cohere
 import requests
 import tweepy
+from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, request
 from langchain import hub
 from langchain_anthropic import ChatAnthropic
@@ -13,21 +15,34 @@ from langsmith import Client, traceable
 from langsmith.run_helpers import get_current_run_tree
 
 from config import (
-    ANTI_VISION,
     AUDIENCE,
-    BEHAVIORS,
-    COMMENTS,
-    CONTENT_TYPES,
     COPYWRITING_STYLE,
     PERSONAL_INFORMATION,
-    SKILLS,
-    VISION,
-    YOUR_PAST,
 )
 from semantic_search.upsert_pinecone import query_index
 from x.x import get_user_info, initialize_twitter_client
 
 app = Flask(__name__)
+scheduler = BackgroundScheduler()
+
+
+@app.before_first_request
+def start_scheduler():
+    scheduler.start()
+
+
+@app.teardown_appcontext
+def stop_scheduler(exception=None):
+    scheduler.shutdown()
+
+
+# test scheduler
+def job():
+    print("Scheduled job executed")
+    print(f"Time: {datetime.now()}")
+
+
+scheduler.add_job(job, "interval", minutes=3)
 
 # Configure logging
 logging.basicConfig(
@@ -156,36 +171,6 @@ def interesting_topic_classifier():
         classification = topic_classification(tweet)
 
         return {"classification": classification}
-
-    except Exception as e:
-        logger.error(f"An error occurred: {str(e)}", exc_info=True)
-        return {"error": str(e)}, 500
-
-
-@app.route("/generate_comment", methods=["POST"])
-def generate_comment():
-    try:
-        data = request.get_json()
-        tweet = data.get("tweet")
-
-        if not tweet:
-            logger.warning("No tweet provided in the request")
-            return {"error": "No tweet provided"}, 400
-
-        comments = chain.invoke(
-            {
-                "AUDIENCE": AUDIENCE,
-                "YOUR_PAST": YOUR_PAST,
-                "SKILLS": SKILLS,
-                "BEHAVIORS": BEHAVIORS,
-                "ANTI_VISION": ANTI_VISION,
-                "VISION": VISION,
-                "COMMENTS": COMMENTS,
-                "BIG_ACCOUNT_POST": tweet,
-            }
-        )
-
-        return {"comments": comments}
 
     except Exception as e:
         logger.error(f"An error occurred: {str(e)}", exc_info=True)
