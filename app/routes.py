@@ -101,7 +101,7 @@ def init_routes(app):
                 }
             )
             final_reply = final_comment["root"][1]["final_reply"]
-            response = send_message(os.environ["SLACK_CHANNEL_ID"], author_id, post_id, final_reply)
+            response = send_message(os.environ["SLACK_CHANNEL_ID"], author_id, post_id, final_reply, example_comments[0])
             return jsonify({"success": response})
 
         except Exception as e:
