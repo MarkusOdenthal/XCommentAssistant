@@ -27,7 +27,6 @@ MANIFEST
 vector_store/
 results/
 *.csv
-*.jsonl
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -59,10 +58,6 @@ coverage.xml
 *.log
 local_settings.py
 db.sqlite3
-
-# Flask stuff:
-instance/
-.webassets-cache
 
 # Scrapy stuff:
 .scrapy
