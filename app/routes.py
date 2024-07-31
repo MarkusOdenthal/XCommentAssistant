@@ -2,6 +2,7 @@ from flask import request, jsonify, current_app
 from .pinecone_client import query_index
 from .x_client import get_user_info, initialize_twitter_client, get_tweet_statistics
 from .topic_classification import topic_classification
+from .langchain_setup import load_chains
 import logging
 
 logger = logging.getLogger(__name__)
