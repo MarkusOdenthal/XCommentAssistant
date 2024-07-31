@@ -17,6 +17,7 @@ tweepy = "^4.14.0"
 pinecone = "^4.0.0"
 langchain-openai = "^0.1.19"
 flask-apscheduler = "^1.13.1"
+slack-sdk = "^3.31.0"
 
 [tool.poetry.dev-dependencies]
 crawl4ai = { git = "https://github.com/unclecode/crawl4ai.git", branch = "main" }
