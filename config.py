@@ -12,9 +12,9 @@ class Config:
     AUDIENCE = """Bootstrap SaaS founders who want to increase their product's visibility and user acquisition specifically through strategic engagement on X (formerly Twitter) by leveraging "build in public" content and targeted commenting under influential accounts in their niche."""
 
     PERSONAL_INFORMATION = """Name: Markus Odenthal
-Twitter Bio: I help bootstrap SaaS founders 10x visibility on X | Strategic commenting expert | 7Y+ in AI + Software Dev | Dad | Calisthenics practitioner.
+Twitter Bio: Posts on staying valuable in the AI era. How to use AI to share your human expertise on X. + sharing my insights on my journey to becoming the REPLY GUY.
 Current Follower Count: 800
-Some more information about me: I'm not a SaaS Founder but SaaS special Bootstrap SaaS companies are an Topic that really interested me. My Service is to help them to grow on X via commenting on Bigger Accounts."""
+Some more information about me: Currently I'm working as a Machine Learning Engineer in my 9-5. I love my Job and I'm passionate about how AI can help us to archive more. I also really like helping other people and connect and learn from them. I'm a big fan of the "build in public" movement and I'm trying to help other people to get more visibility on X by giving them tips and tricks on how to engage with their audience. Special the replying to comments is a big part of my strategy and I'm always looking for new ways to improve my replies. For this I'm looking for ways to use AI to improve this replies but still keep them human. We need a good combination of human and AI."""
 
     COPYWRITING_STYLE = """When generating the reply, follow these guidelines:
 
