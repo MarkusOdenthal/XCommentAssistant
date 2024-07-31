@@ -1,4 +1,4 @@
-from semantic_search.upsert_pinecone import create_index
+from app.pinecone_client import create_index
 
 def main():
     index_name = "x-posts-markus-odenthal"

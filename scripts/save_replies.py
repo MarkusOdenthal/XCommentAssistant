@@ -1,5 +1,5 @@
-from x.x import initialize_twitter_client, get_user_id, get_user_replies, get_original_posts, filter_level1_interactions
-from semantic_search.upsert_pinecone import upsert_data
+from app.x_client import initialize_twitter_client, get_user_id, get_user_replies, get_original_posts, filter_level1_interactions
+from app.pinecone_client import upsert_data
 import re
 
 

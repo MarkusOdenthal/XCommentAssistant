@@ -152,3 +152,23 @@ def filter_level1_interactions(
         if original_post and original_post.referenced_tweets is None:
             level1_interactions.append({"original_post": original_post, "reply": reply})
     return level1_interactions
+
+def get_tweet_statistics(client: tweepy.Client, tweet_url: str) -> Dict:
+    # Extract tweet ID from URL
+    tweet_id = tweet_url.split("/")[-1].split("?")[0]
+
+    # Fetch tweet data
+    response = client.get_tweets(
+        [tweet_id],
+        tweet_fields=["public_metrics", "non_public_metrics"],
+        user_auth=True,
+    )
+
+    if not response.data:
+        return {"error": "Tweet not found or inaccessible"}
+
+    metrics = {
+        **response.data[0].public_metrics,
+        **response.data[0].non_public_metrics,
+    }
+    return metrics

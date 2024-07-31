@@ -1,5 +1,5 @@
-from x.x import initialize_twitter_client, get_user_id, get_user_posts
-from semantic_search.upsert_pinecone import upsert_data
+from app.x_client import initialize_twitter_client, get_user_id, get_user_posts
+from app.pinecone_client import upsert_data
 
 
 def main(max_post_id):

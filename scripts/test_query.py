@@ -1,5 +1,5 @@
-from semantic_search.upsert_pinecone import query_index
-from x.x import get_user_id, initialize_twitter_client
+from app.pinecone_client import query_index
+from app.x_client import get_user_id, initialize_twitter_client
 
 client = initialize_twitter_client()
 username = "markusodenthal"

@@ -1,5 +1,5 @@
 import unittest
-from app import app
+from run import app
 
 class TestApp(unittest.TestCase):
     # def test_add_label_data_to_topic_classification(self):
