@@ -4,7 +4,6 @@ from .x_client import get_user_info, initialize_twitter_client, get_tweet_statis
 from .topic_classification import topic_classification
 from .slack_client import send_message
 import logging
-import threading
 import os
 
 logger = logging.getLogger(__name__)
@@ -49,20 +48,21 @@ def init_routes(app):
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}", exc_info=True)
             return {"error": str(e)}, 500
-
-    def generate_comment_viral_task(data):
+    
+    @app.route("/generate_comment_viral", methods=["POST"])
+    def generate_comment_viral():
         try:
+            data = request.get_json()
             tweet = data.get("tweet")
             author_id = int(data.get("author_id"))
             client = initialize_twitter_client()
             user_info = get_user_info(client, user_id=author_id)
-
             user_name = user_info.get("name", "") if user_info else ""
             user_description = user_info.get("description", "") if user_info else ""
 
             if not tweet:
                 logger.warning("No tweet provided in the request")
-                return
+                return {"error": "No tweet provided"}, 400
 
             example_comments = query_index("x-comments-markus-odenthal", tweet).matches
             example_comments_str = "\n".join([
@@ -100,27 +100,12 @@ def init_routes(app):
                 }
             )
             final_reply = final_comment["root"][1]["final_reply"]
-            logger.info(f"Final reply generated: {final_reply}")
-            send_message(os.environ["SLACK_CHANNEL_ID"], tweet, final_reply)
+            response = send_message(os.environ["SLACK_CHANNEL_ID"], tweet, final_reply)
+            return jsonify({"success": response})
 
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}", exc_info=True)
-    
-    @app.route("/generate_comment_viral", methods=["POST"])
-    def generate_comment_viral():
-        try:
-            data = request.get_json()
-
-            # Start the background task
-            threading.Thread(target=generate_comment_viral_task, args=(data)).start()
-
-            # Return immediately
-            return jsonify({"message": "Request received and is being processed"}), 202
-
-        except Exception as e:
-            logger.error(f"An error occurred: {str(e)}", exc_info=True)
-            return jsonify({"error": str(e)}), 500
-    
+            return {"error": str(e)}, 500
 
     @app.route("/tweet_statistics", methods=["POST"])
     def tweet_statistics():
