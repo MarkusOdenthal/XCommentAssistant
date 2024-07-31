@@ -5,7 +5,7 @@ from datetime import datetime
 import cohere
 import requests
 import tweepy
-from apscheduler.schedulers.background import BackgroundScheduler
+from flask_apscheduler import APScheduler
 from flask import Flask, request
 from langchain import hub
 from langchain_anthropic import ChatAnthropic
@@ -22,27 +22,23 @@ from config import (
 from semantic_search.upsert_pinecone import query_index
 from x.x import get_user_info, initialize_twitter_client
 
+# set configuration values
+class Config:
+    SCHEDULER_API_ENABLED = True
+
 app = Flask(__name__)
-scheduler = BackgroundScheduler()
+app.config.from_object(Config())
 
-
-@app.before_first_request
-def start_scheduler():
-    scheduler.start()
-
-
-@app.teardown_appcontext
-def stop_scheduler(exception=None):
-    scheduler.shutdown()
-
+# initialize scheduler
+scheduler = APScheduler()
+scheduler.init_app(app)
+scheduler.start()
 
 # test scheduler
+@scheduler.task('interval', id='do_job', seconds=3, misfire_grace_time=900)
 def job():
     print("Scheduled job executed")
     print(f"Time: {datetime.now()}")
-
-
-scheduler.add_job(job, "interval", minutes=3)
 
 # Configure logging
 logging.basicConfig(
