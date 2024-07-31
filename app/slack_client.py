@@ -6,15 +6,16 @@ from slack_sdk.errors import SlackApiError
 slack_token = os.environ["SLACK_BOT_TOKEN"]
 client = WebClient(token=slack_token)
 
-def send_message(channel_id, post, reply):
+def send_message(channel_id, author_id, post_id, final_reply):
     try:
+        text = f"New Post:\nhttps://twitter.com/{author_id}/status/{post_id}"
         response_post = client.chat_postMessage(
             channel=channel_id,
-            text=post
+            text=text
         )
         response_reply = client.chat_postMessage(
             channel=channel_id,
-            text=reply,
+            text=final_reply,
             thread_ts=response_post["ts"]
         )
     except SlackApiError as e:

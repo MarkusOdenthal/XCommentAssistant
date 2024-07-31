@@ -55,6 +55,7 @@ def init_routes(app):
             data = request.get_json()
             tweet = data.get("tweet")
             author_id = int(data.get("author_id"))
+            post_id = int(data.get("post_id"))
             client = initialize_twitter_client()
             user_info = get_user_info(client, user_id=author_id)
             user_name = user_info.get("name", "") if user_info else ""
@@ -100,7 +101,7 @@ def init_routes(app):
                 }
             )
             final_reply = final_comment["root"][1]["final_reply"]
-            response = send_message(os.environ["SLACK_CHANNEL_ID"], tweet, final_reply)
+            response = send_message(os.environ["SLACK_CHANNEL_ID"], author_id, post_id, final_reply)
             return jsonify({"success": response})
 
         except Exception as e:
