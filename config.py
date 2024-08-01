@@ -9,7 +9,7 @@ class Config:
     X_ACCESS_TOKEN_SECRET = os.getenv("X_ACCESS_TOKEN_SECRET")
     X_ACCESS_CONSUMER_KEY = os.getenv("X_ACCESS_CONSUMER_KEY")
     X_ACCESS_CONSUMER_SECRET = os.getenv("X_ACCESS_CONSUMER_SECRET")
-    AUDIENCE = """Bootstrap SaaS founders who want to increase their product's visibility and user acquisition specifically through strategic engagement on X (formerly Twitter) by leveraging "build in public" content and targeted commenting under influential accounts in their niche."""
+    AUDIENCE = """Time-constrained solopreneurs and founders with valuable expertise who want to rapidly increase engagement and attract high-quality customers on X through a premium, personalized AI-assisted ghostwriting service for strategic real-time replies."""
 
     PERSONAL_INFORMATION = """Name: Markus Odenthal
 Twitter Bio: Posts on staying valuable in the AI era. How to use AI to share your human expertise on X. + sharing my insights on my journey to becoming the REPLY GUY.
