@@ -49,7 +49,7 @@ def get_user_info(client: tweepy.Client, username=None, user_id=None) -> tweepy.
 
 
 def get_user_posts(
-    client: tweepy.Client, user_id: int, max_post_id: int
+    client: tweepy.Client, user_id: int, max_post_id: int, end_time=None
 ) -> List[tweepy.Tweet]:
     all_posts = []
     pagination_token = None
@@ -59,6 +59,7 @@ def get_user_posts(
             user_tweets = client.get_users_tweets(
                 user_auth=True,
                 id=user_id,
+                end_time=end_time,
                 max_results=100,
                 since_id=max_post_id,
                 exclude=["replies"],
