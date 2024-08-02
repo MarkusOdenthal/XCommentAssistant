@@ -13,3 +13,11 @@ Follow the guide at https://render.com/docs/deploy-flask.
 To run the script for creating a new Pinecone index, you can use the following command:
 
 `python scripts/create_pinecone_index.py <index_name> <dimension>`
+
+## Update Post and Reply Database
+
+For Post please run this command:
+`python scripts/save_post.py`
+
+For comments run this command:
+`python scripts/save_reply.py`
