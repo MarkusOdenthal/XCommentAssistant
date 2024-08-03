@@ -73,14 +73,20 @@ def main(max_reply_id):
 if __name__ == "__main__":
     try:
         with open('instance/data.json', 'r') as file:
-            max_reply_id = json.load(file).get('max_reply_id')
+            data = json.load(file)
     except (FileNotFoundError, PermissionError) as file_error:
         print(f"File error: {file_error}")
-        max_reply_id = 0
+        data = {"max_reply_id": 0}
     except json.JSONDecodeError as json_error:
         print(f"JSON error: {json_error}")
-        max_reply_id = 0
+        data = {"max_reply_id": 0}
+    
+    max_reply_id = data.get('max_reply_id', 0)
     max_reply_id += 1
+    
     max_reply_id = main(max_reply_id)
+    
+    data['max_reply_id'] = max_reply_id
+    
     with open("instance/data.json", "w") as file:
-        json.dump({"max_reply_id": max_reply_id}, file, indent=4)
+        json.dump(data, file, indent=4)

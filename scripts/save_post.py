@@ -4,6 +4,7 @@ from app.pinecone_client import upsert_data
 from app.x_client import get_user_id, get_user_posts, initialize_twitter_client
 
 import datetime
+import traceback
 
 def main(latest_post_id: int)-> int:
     try:
@@ -41,18 +42,23 @@ def main(latest_post_id: int)-> int:
 if __name__ == "__main__":
     try:
         with open("instance/data.json", "r") as file:
-            latest_post_id = json.load(file).get("max_post_id", 0)
+            data = json.load(file)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        import traceback
         print(f"Error reading JSON file: {traceback.format_exc()}")
-        latest_post_id = None
+        data = {"max_post_id": 0}
+
+    latest_post_id = data.get("max_post_id", 0)
+
     if latest_post_id is not None:
         latest_post_id += 1
     else:
         latest_post_id = 0
+
     new_post_id = main(latest_post_id)
+
     if new_post_id is not None:
+        data["max_post_id"] = new_post_id
         with open("instance/data.json", "w") as file:
-            json.dump({"max_post_id": new_post_id}, file)
+            json.dump(data, file)
     else:
         print("Error saving post")
