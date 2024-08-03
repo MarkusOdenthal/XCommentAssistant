@@ -33,7 +33,7 @@ def main(latest_post_id: int)-> int:
             # Track the maximum post.id
             if latest_post_id is None or post.id > latest_post_id:
                 new_post_id = post.id
-
+        print(f"Adding {len(data)} posts to Pinecone")
         upsert_data("x-posts-markus-odenthal", data)
         return new_post_id
 

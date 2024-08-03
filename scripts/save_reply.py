@@ -66,6 +66,7 @@ def main(max_reply_id):
                 max_reply_id = interaction["reply"].id
 
         upsert_data("x-comments-markus-odenthal", data)
+        print(f"Adding {len(data)} comments to Pinecone")
         return max_reply_id
 
 
