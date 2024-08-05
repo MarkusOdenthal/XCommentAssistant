@@ -53,7 +53,9 @@ def get_user_posts(
 ) -> List[tweepy.Tweet]:
     all_posts = []
     pagination_token = None
-
+    # TODO: Filter on reply_to_user_id if this is same to user_id then it is a thread. if not it's a normal reply from me to other user post.
+    # - this way I get also the replies I did to big accounts. that means I can combine post and reply script. I need only to find a way to get original post
+    # - dann sollte ich nur das zeitfensetr von 3 auf 5 tage hochsetzen
     try:
         while True:
             user_tweets = client.get_users_tweets(
@@ -62,7 +64,6 @@ def get_user_posts(
                 end_time=end_time,
                 max_results=100,
                 since_id=max_post_id,
-                exclude=["replies"],
                 tweet_fields=[
                     "created_at",
                     "public_metrics",
@@ -70,6 +71,7 @@ def get_user_posts(
                     "non_public_metrics",
                 ],
                 pagination_token=pagination_token,
+                expansions=["referenced_tweets.id", "in_reply_to_user_id"],
             )
 
             if user_tweets.data:
@@ -138,6 +140,9 @@ def get_original_posts(
 
     def fetch_tweets_in_chunks(ids_chunk):
         try:
+            # How to fetch here the hole tweet when i was a thread?
+            # my reply to what id is that the reply. This I need to figure out.
+            # Then it will may pretty easy. 
             response = client.get_tweets(
                 ids=ids_chunk,
                 expansions=["referenced_tweets.id", "author_id"],
