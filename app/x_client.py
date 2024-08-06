@@ -7,17 +7,20 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def initialize_twitter_client() -> tweepy.Client:
     required_env_vars = [
         "X_BEARER_TOKEN",
         "X_ACCESS_TOKEN",
         "X_ACCESS_TOKEN_SECRET",
         "X_ACCESS_CONSUMER_KEY",
-        "X_ACCESS_CONSUMER_SECRET"
+        "X_ACCESS_CONSUMER_SECRET",
     ]
     missing_vars = [var for var in required_env_vars if os.getenv(var) is None]
     if missing_vars:
-        raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
+        raise EnvironmentError(
+            f"Missing required environment variables: {', '.join(missing_vars)}"
+        )
 
     return tweepy.Client(
         bearer_token=os.getenv("X_BEARER_TOKEN"),
@@ -33,7 +36,7 @@ def get_user_id(client: tweepy.Client, username: str) -> int:
     try:
         return client.get_user(username=username).data.id
     except tweepy.TweepyException as e:
-        return {'error': f'RequestException: {e}'}
+        return {"error": f"RequestException: {e}"}
 
 
 def get_user_info(client: tweepy.Client, username=None, user_id=None) -> tweepy.User:
@@ -45,7 +48,7 @@ def get_user_info(client: tweepy.Client, username=None, user_id=None) -> tweepy.
         elif user_id:
             return client.get_user(id=user_id, user_fields=["description"]).data
     except tweepy.TweepyException as e:
-        return {'error': f'RequestException: {e}'}
+        return {"error": f"RequestException: {e}"}
 
 
 def get_user_posts(
@@ -83,7 +86,7 @@ def get_user_posts(
 
         return all_posts
     except tweepy.TweepyException as e:
-        return {'error': f'RequestException: {e}'}
+        return {"error": f"RequestException: {e}"}
 
 
 def get_user_replies(
@@ -92,7 +95,7 @@ def get_user_replies(
     all_replies = []
     pagination_token = None
 
-    end_time = datetime.datetime.now() - datetime.timedelta(days=3)
+    end_time = datetime.datetime.now() - datetime.timedelta(days=5)
     try:
         while True:
             user_tweets = client.get_users_tweets(
@@ -112,7 +115,10 @@ def get_user_replies(
                 pagination_token=pagination_token,
             )
 
-            if user_tweets.data:
+            if user_tweets.meta["result_count"] == 0:
+                break
+            else:
+                pagination_token = user_tweets.meta.get("next_token", None)
                 replies = [
                     tweet
                     for tweet in user_tweets.data
@@ -120,64 +126,79 @@ def get_user_replies(
                     and tweet.referenced_tweets[0].type == "replied_to"
                 ]
                 all_replies.extend(replies)
-
-            pagination_token = user_tweets.meta.get("next_token", None)
-            if not pagination_token:
-                break
-
         return all_replies
 
     except tweepy.TweepyException as e:
-        return {'error': f'RequestException: {e}'}
+        return {"error": f"RequestException: {e}"}
 
+
+def fetch_full_thread(client: tweepy.Client, tweet_id: int):
+    thread = []
+    current_tweet = client.get_tweet(
+        tweet_id,
+        tweet_fields=[
+            "created_at",
+            "public_metrics",
+            "conversation_id",
+            "in_reply_to_user_id",
+        ],
+        expansions=["referenced_tweets.id", "author_id"],
+    ).data
+    while current_tweet:
+        thread.append(current_tweet)
+        if current_tweet.referenced_tweets:
+            current_tweet = client.get_tweet(
+                current_tweet.referenced_tweets[0].id,
+                tweet_fields=[
+                    "created_at",
+                    "public_metrics",
+                    "conversation_id",
+                    "in_reply_to_user_id",
+                ],
+                expansions=["referenced_tweets.id", "author_id"],
+            ).data
+        else:
+            current_tweet = None
+    thread.reverse()
+    return thread
 
 
 def get_original_posts(
     client: tweepy.Client, replies: List[tweepy.Tweet]
-) -> Dict[int, tweepy.Tweet]:
+) -> List[tweepy.Tweet]:
     original_post_ids = [reply.referenced_tweets[0].id for reply in replies]
-    original_posts = {}
+    original_posts = []
+    missing_tweet_ids_list = []
 
     def fetch_tweets_in_chunks(ids_chunk):
         try:
-            # How to fetch here the hole tweet when i was a thread?
-            # my reply to what id is that the reply. This I need to figure out.
-            # Then it will may pretty easy. 
             response = client.get_tweets(
                 ids=ids_chunk,
                 expansions=["referenced_tweets.id", "author_id"],
                 tweet_fields=["created_at", "public_metrics", "conversation_id"],
             )
-            return response.data
+            missing_tweet_ids = [int(error['value']) for error in response.errors if "Could not find tweet with ids" in error['detail']]
+            return response.data, missing_tweet_ids
         except tweepy.TweepyException as e:
-            return {'error': f'RequestException: {e}'}
+            return {"error": f"RequestException: {e}"}
 
     chunk_size = 100
     for i in range(0, len(original_post_ids), chunk_size):
         ids_chunk = original_post_ids[i : i + chunk_size]
-        tweets = fetch_tweets_in_chunks(ids_chunk)
-        original_posts.update({tweet.id: tweet for tweet in tweets})
+        tweets, missing_tweet_ids = fetch_tweets_in_chunks(ids_chunk)
+        missing_tweet_ids_list.extend(missing_tweet_ids)
 
-    return original_posts
+        for tweet in tweets:
+            if (
+                "in_reply_to_status_id" in tweet.data
+                and tweet.data["in_reply_to_status_id"] is not None
+            ):
+                thread = fetch_full_thread(tweet.id)
+                original_posts.append(thread)
+            else:
+                original_posts.append(tweet)
 
-
-def filter_level1_interactions(
-    replies: List[tweepy.Tweet], original_posts: Dict[int, tweepy.Tweet], user_id: int
-) -> List[Dict]:
-    level1_interactions = []
-    for reply in replies:
-        if not reply.referenced_tweets:
-            continue
-        try:
-            original_post_id = reply.referenced_tweets[0].id
-        except IndexError:
-            continue
-        original_post = original_posts.get(original_post_id)
-        if not original_post:
-            continue
-        if original_post and original_post.referenced_tweets is None:
-            level1_interactions.append({"original_post": original_post, "reply": reply})
-    return level1_interactions
+    return original_posts, missing_tweet_ids_list
 
 
 def get_tweet_statistics(client: tweepy.Client, tweet_url: str) -> Dict:
@@ -230,5 +251,7 @@ def get_list_tweets(client: tweepy.Client, list_id: str) -> List[tweepy.Tweet]:
 
         return all_tweets
     except tweepy.TweepyException as e:
-        logging.error(f"Error fetching list tweets for list {list_id} with pagination token {pagination_token}: {e}")
+        logging.error(
+            f"Error fetching list tweets for list {list_id} with pagination token {pagination_token}: {e}"
+        )
         return []
