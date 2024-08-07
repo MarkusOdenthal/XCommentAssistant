@@ -1,6 +1,8 @@
 import os
-
+from pathlib import Path
 class Config:
+    BASE_DIR = Path(__file__).resolve().parent
+    DATA_FILE = BASE_DIR / 'instance' / 'data.json'
     SCHEDULER_API_ENABLED = True
     COHERE_API_KEY = os.getenv("COHERE_API_KEY")
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")

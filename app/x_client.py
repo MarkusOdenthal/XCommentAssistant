@@ -240,13 +240,22 @@ def get_list_tweets(
             list_tweets = client.get_list_tweets(
                 id=list_id,
                 max_results=100,
-                expansions=["referenced_tweets.id", "attachments.media_keys"],
-                tweet_fields=["created_at", "public_metrics", "conversation_id", "author_id", "in_reply_to_user_id"],
+                expansions=["attachments.media_keys", "referenced_tweets.id", "author_id"],
+                tweet_fields=["created_at", "public_metrics", "conversation_id", "author_id", "in_reply_to_user_id", "attachments"],
                 media_fields=["url", "type"],
+                user_fields=["username", "description", "id"],
                 pagination_token=pagination_token,
                 user_auth=True,
             )
+            # Extract tweets and user information from the response
             list_tweet_data = list_tweets.data
+            if list_tweet_data is None:
+                return None, None
+            users = {user["id"]: user for user in list_tweets.includes["users"]}
+            # media = {media["media_key"]: media for media in list_tweets.includes["media"]}
+            # to get images I need to use this: list_tweets.includes and match this then to the media id.
+            # Filter out all post with media:
+            list_tweet_data = [tweet for tweet in list_tweet_data if not tweet.attachments]
             tweet_ids = [tweet.id for tweet in list_tweet_data]
             min_tweet_id = min(tweet_ids)
             if min_tweet_id <= latest_post_id:
@@ -262,7 +271,7 @@ def get_list_tweets(
         for tweet in all_tweets:
             if tweet.referenced_tweets is None or (tweet.referenced_tweets[0].type == "replied_to" and tweet.in_reply_to_user_id == tweet.author_id):
                 all_tweets_clean.append(tweet)
-        return all_tweets_clean
+        return all_tweets_clean, users
     except tweepy.TweepyException as e:
         logging.error(
             f"Error fetching list tweets for list {list_id} with pagination token {pagination_token} and latest_post_id {latest_post_id}: {e}"
@@ -315,6 +324,7 @@ def process_tweets(
                 "metrics": dict(combined_metrics),
                 "tweet_ids": [str(tweet.id) for tweet in sorted_tweets],
                 "is_thread": True,
+                "author_id": sorted_tweets[0].author_id,
             }
         else:
             tweet = sorted_tweets[0]
@@ -329,6 +339,7 @@ def process_tweets(
                 "metrics": all_metrics,
                 "tweet_ids": [str(tweet.id)],
                 "is_thread": False,
+                "author_id": tweet.author_id,
             }
 
         processed_tweets.append(processed_tweet)

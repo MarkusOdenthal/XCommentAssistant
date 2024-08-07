@@ -49,7 +49,8 @@ def process_replies_for_upload(replies, replies_original_post, latest_post_id):
         # Track the maximum post.id
         if latest_post_id is None or reply.id > latest_post_id:
             latest_post_id = reply.id
-    upsert_data("x-comments-markus-odenthal", data)
+    if len(data) > 0:
+        upsert_data("x-comments-markus-odenthal", data)
     print(f"Adding {len(data)} comments to Pinecone")
     return latest_post_id
 
@@ -63,7 +64,7 @@ def main(latest_post_id: int, username: str) -> int:
     user_id = get_user_id(client, username)
 
     if user_id:
-        end_time = datetime.datetime.now() - datetime.timedelta(days=5)
+        end_time = datetime.datetime.now() - datetime.timedelta(days=3)
         posts = get_user_posts(client, user_id, latest_post_id, end_time)
 
         # Now you can analyze level1_interactions
@@ -108,7 +109,8 @@ def main(latest_post_id: int, username: str) -> int:
             )
 
         print(f"Adding {len(data)} posts to Pinecone")
-        upsert_data("x-posts-markus-odenthal", data)
+        if len(data) > 0:
+            upsert_data("x-posts-markus-odenthal", data)
         return new_latest_post_id
 
 
