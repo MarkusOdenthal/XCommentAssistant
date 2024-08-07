@@ -109,12 +109,11 @@ def init_routes(app):
             logger.error(f"An error occurred: {str(e)}", exc_info=True)
             return {"error": str(e)}, 500
 
-    @app.route("/generate_comment", methods=["POST"])
+    @app.route("/generate_comment")
     def generate_comment():
         try:
             client = initialize_twitter_client()
-            data = request.get_json()
-            username = data.get("username")
+            username = "markusodenthal"
             db = read_data()
             db_user = db['users'].get(username)
             x_lists = db_user["lists"]
