@@ -1,1 +1,13 @@
-{ "users": { "markusodenthal": { "latest_post_id": 1819104407642165721 } } }
+{
+  "users": {
+    "markusodenthal": {
+      "latest_post_id": 1819104407642165721,
+      "lists": {
+        "Increase Engagement": {
+          "id": "1813470459049968012",
+          "latest_post_id": 1821055919137988762
+        }
+      }
+    }
+  }
+}

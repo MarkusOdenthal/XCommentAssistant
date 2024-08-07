@@ -1,9 +1,11 @@
 import datetime
+import logging
 import os
-from typing import Dict, List
+from collections import defaultdict
+from typing import Dict, List, Tuple
 
 import tweepy
-import logging
+from tweepy import Tweet
 
 logger = logging.getLogger(__name__)
 
@@ -56,9 +58,6 @@ def get_user_posts(
 ) -> List[tweepy.Tweet]:
     all_posts = []
     pagination_token = None
-    # TODO: Filter on reply_to_user_id if this is same to user_id then it is a thread. if not it's a normal reply from me to other user post.
-    # - this way I get also the replies I did to big accounts. that means I can combine post and reply script. I need only to find a way to get original post
-    # - dann sollte ich nur das zeitfensetr von 3 auf 5 tage hochsetzen
     try:
         while True:
             user_tweets = client.get_users_tweets(
@@ -177,7 +176,11 @@ def get_original_posts(
                 expansions=["referenced_tweets.id", "author_id"],
                 tweet_fields=["created_at", "public_metrics", "conversation_id"],
             )
-            missing_tweet_ids = [int(error['value']) for error in response.errors if "Could not find tweet with ids" in error['detail']]
+            missing_tweet_ids = [
+                int(error["value"])
+                for error in response.errors
+                if "Could not find tweet with ids" in error["detail"]
+            ]
             return response.data, missing_tweet_ids
         except tweepy.TweepyException as e:
             return {"error": f"RequestException: {e}"}
@@ -222,9 +225,11 @@ def get_tweet_statistics(client: tweepy.Client, tweet_url: str) -> Dict:
     return metrics
 
 
-def get_list_tweets(client: tweepy.Client, list_id: str) -> List[tweepy.Tweet]:
+def get_list_tweets(
+    client: tweepy.Client, list_id: str, latest_post_id: int
+) -> List[tweepy.Tweet]:
     if not isinstance(client, tweepy.Client):
-        raise ValueError("Provided client is not a valid tweepy.Client instance")
+        raise ValueError("Provided client is not a valid tweepy.Client instance, expected tweepy.Client")
     if not isinstance(list_id, str) or not list_id.strip():
         raise ValueError("Provided list_id is not a valid non-empty string")
     all_tweets = []
@@ -234,24 +239,98 @@ def get_list_tweets(client: tweepy.Client, list_id: str) -> List[tweepy.Tweet]:
         while True:
             list_tweets = client.get_list_tweets(
                 id=list_id,
-                max_results=20,
+                max_results=100,
                 expansions=["referenced_tweets.id", "attachments.media_keys"],
-                tweet_fields=["created_at", "public_metrics", "conversation_id"],
+                tweet_fields=["created_at", "public_metrics", "conversation_id", "author_id", "in_reply_to_user_id"],
                 media_fields=["url", "type"],
                 pagination_token=pagination_token,
                 user_auth=True,
             )
-
-            if list_tweets.data:
-                all_tweets.extend(list_tweets.data)
-
-            pagination_token = list_tweets.meta.get("next_token", None)
-            if not pagination_token:
+            list_tweet_data = list_tweets.data
+            tweet_ids = [tweet.id for tweet in list_tweet_data]
+            min_tweet_id = min(tweet_ids)
+            if min_tweet_id <= latest_post_id:
+                list_tweet_data = [
+                    tweet for tweet in list_tweet_data if tweet.id > latest_post_id
+                ]
+                all_tweets.extend(list_tweet_data)
                 break
-
-        return all_tweets
+            else:
+                all_tweets.extend(list_tweet_data)
+                pagination_token = list_tweets.meta.get("next_token", None)
+        all_tweets_clean = []
+        for tweet in all_tweets:
+            if tweet.referenced_tweets is None or (tweet.referenced_tweets[0].type == "replied_to" and tweet.in_reply_to_user_id == tweet.author_id):
+                all_tweets_clean.append(tweet)
+        return all_tweets_clean
     except tweepy.TweepyException as e:
         logging.error(
-            f"Error fetching list tweets for list {list_id} with pagination token {pagination_token}: {e}"
+            f"Error fetching list tweets for list {list_id} with pagination token {pagination_token} and latest_post_id {latest_post_id}: {e}"
         )
         return []
+
+
+def process_tweets(
+    tweets: List[Tweet], latest_post_id: int = None
+) -> Tuple[List[Dict], int]:
+    # Group tweets by conversation_id
+    threads = defaultdict(list)
+    new_latest_post_id = latest_post_id
+
+    for tweet in tweets:
+        try:
+            assert all(hasattr(tweet, attr) for attr in ['text', 'id', 'conversation_id', 'public_metrics', 'non_public_metrics', 'created_at'])
+            threads[tweet.conversation_id].append(tweet)
+            if new_latest_post_id is None or tweet.id > new_latest_post_id:
+                new_latest_post_id = tweet.id
+        except AssertionError:
+            logging.error('Tweet attributes missing or improperly formatted')
+        if new_latest_post_id is None or tweet.id > new_latest_post_id:
+            new_latest_post_id = tweet.id
+
+    processed_tweets = []
+
+    for conversation_id, thread_tweets in threads.items():
+        try:
+            sorted_tweets = sorted(thread_tweets, key=lambda x: x.id, reverse=True)
+        except Exception as e:
+            logging.error(f'Error sorting tweets for conversation {conversation_id}: {e}')
+            continue
+
+        if len(sorted_tweets) > 1:
+            combined_text = "\n\n".join(tweet.text for tweet in reversed(sorted_tweets))
+            combined_metrics = defaultdict(int)
+
+            for tweet in sorted_tweets:
+                for metric, value in tweet.public_metrics.items():
+                    combined_metrics[metric] += value
+                if tweet.non_public_metrics:
+                    for metric, value in tweet.non_public_metrics.items():
+                        combined_metrics[metric] += value
+
+            processed_tweet = {
+                "conversation_id": conversation_id,
+                "text": combined_text,
+                "created_at": sorted_tweets[0].created_at.isoformat(),
+                "metrics": dict(combined_metrics),
+                "tweet_ids": [str(tweet.id) for tweet in sorted_tweets],
+                "is_thread": True,
+            }
+        else:
+            tweet = sorted_tweets[0]
+            all_metrics = {**tweet.public_metrics}
+            if tweet.non_public_metrics:
+                all_metrics.update(tweet.non_public_metrics)
+
+            processed_tweet = {
+                "conversation_id": conversation_id,
+                "text": tweet.text,
+                "created_at": tweet.created_at.isoformat(),
+                "metrics": all_metrics,
+                "tweet_ids": [str(tweet.id)],
+                "is_thread": False,
+            }
+
+        processed_tweets.append(processed_tweet)
+    processed_tweets.sort(key=lambda x: int(x["tweet_ids"][0]), reverse=True)
+    return processed_tweets, new_latest_post_id
