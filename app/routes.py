@@ -112,6 +112,7 @@ def init_routes(app):
     @app.route("/generate_comment", methods=["POST"])
     def generate_comment():
         try:
+            logger.info("Start generating comment")
             client = initialize_twitter_client()
             #data = request.get_json()
             #username = data.get("username")
@@ -120,6 +121,7 @@ def init_routes(app):
             db_user = db['users'].get(username)
             x_lists = db_user["lists"]
             for list_name, list_data in x_lists.items():
+                logger.info(f"Processing list: {list_name}")
                 list_id = list_data.get("id", 0)
                 slack_channel_id = list_data.get("slack_channel_id")
                 latest_post_id = list_data.get("latest_post_id", 0)
@@ -128,6 +130,7 @@ def init_routes(app):
                 else:
                     latest_post_id = 0
 
+                logger.info(f"List ID: {list_id}, Latest Post ID: {latest_post_id}")
                 tweets, users = get_list_tweets(client, list_id, latest_post_id)
                 if not tweets:
                     continue
@@ -135,6 +138,7 @@ def init_routes(app):
                 tweets, new_latest_post_id = process_tweets(tweets)
                 list_data["latest_post_id"] = new_latest_post_id
                 for tweet in tweets:
+                    logger.info(f"Processing tweet: {tweet['text']}")
                     tweet_text = tweet["text"]
                     classification = topic_classification(tweet_text)
                     if classification != "interesting_topic":
