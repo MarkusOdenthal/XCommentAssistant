@@ -113,6 +113,8 @@ def init_routes(app):
     def generate_comment():
         try:
             client = initialize_twitter_client()
+            #data = request.get_json()
+            #username = data.get("username")
             username = "markusodenthal"
             db = read_data()
             db_user = db['users'].get(username)
