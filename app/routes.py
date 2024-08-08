@@ -111,6 +111,7 @@ def init_routes(app):
 
     @app.route("/generate_comment", methods=["POST"])
     def generate_comment():
+        response = {}
         try:
             logger.info("Start generating comment")
             client = initialize_twitter_client()
