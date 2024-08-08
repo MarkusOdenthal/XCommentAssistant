@@ -19,16 +19,19 @@ def load_chains():
         viral_social_media_comments_ideas_prompt | gpt_4o_mini | str_parser
     )
 
+    gpt4o = ChatOpenAI(model="gpt-4o", temperature=1.0)
     sonnet_3_5_0 = ChatAnthropic(
         model="claude-3-5-sonnet-20240620",
         api_key=os.getenv("ANTHROPIC_API_KEY"),
         temperature=0.0,
     )
+    sonnet_3_5_0_with_fallback = sonnet_3_5_0.with_fallbacks([gpt4o])
+
     viral_social_media_comments_refine_prompt = hub.pull(
         "viral_social_media_comments_refine"
     )
     viral_social_media_comments_refine_chain = (
-        viral_social_media_comments_refine_prompt | sonnet_3_5_0 | xml_parser
+        viral_social_media_comments_refine_prompt | sonnet_3_5_0_with_fallback | xml_parser
     )
 
     return {
