@@ -429,10 +429,10 @@ class XClient:
     def get_all_post_replies_from_user(self, latest_post_id: int, username: str):
         # we will here take the call and return directly an result. But triggern an Jobs that is running in the background. for each user.
         # this also make sense because each user has it's own limit. So we will return then directly an success message. Or this will be the job and I build a extra endpoint to call this job.
-        user_id = self.get_user_id.remote(username=username)
+        user_id = self.get_user_id.local(username=username)
         print(f"User ID: {user_id}")
     
-        end_time = datetime.datetime.now() - datetime.timedelta(minutes=10)
+        end_time = datetime.datetime.now() - datetime.timedelta(days=5)
         posts = self.get_user_posts.local(user_id, latest_post_id, end_time)
         print(f"Number of posts: {len(posts)}")
 

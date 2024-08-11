@@ -1,14 +1,14 @@
 {
-    "users": {
-        "markusodenthal": {
-            "latest_post_id": 1820101089049342451,
-            "lists": {
-                "Increase Engagement": {
-                    "id": "1821152727704994292",
-                    "latest_post_id": 1821275146528940241,
-                    "slack_channel_id": "C07G1RW7SVA"
-                }
-            }
+  "users": {
+    "markusodenthal": {
+      "latest_post_id": 1820781071971049676,
+      "lists": {
+        "Increase Engagement": {
+          "id": "1821152727704994292",
+          "latest_post_id": 1821275146528940241,
+          "slack_channel_id": "C07G1RW7SVA"
         }
+      }
     }
+  }
 }

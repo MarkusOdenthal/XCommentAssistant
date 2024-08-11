@@ -23,13 +23,4 @@ def create_app():
 
     # Initialize routes
     init_routes(app)
-
-    # Initialize and start the scheduler
-    # scheduler = APScheduler()
-    # scheduler.init_app(app)
-    # scheduler.start()
-
-    # Initialize jobs
-    # init_jobs(scheduler)
-
     return app
