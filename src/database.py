@@ -80,7 +80,6 @@ class PineconeClient:
         return matches
 
 @app.function()
-@modal.web_endpoint(method="POST")
 def query(data: dict) -> list[dict]:
     """Query the Pinecone index with a given query and return the results.
     """
@@ -89,15 +88,12 @@ def query(data: dict) -> list[dict]:
     return PineconeClient().query_index.remote(index_name, q_vector)
 
 @app.function()
-@modal.web_endpoint(method="POST")
-def upsert(data: dict):
+def upsert(index_name: str, vectors: list[dict]):
     """Upsert data into a Pinecone index.
 
     Parameters:
         vectors (list[dict]): The vectors to upsert into the index.
     """
-    index_name = data["index_name"]
-    vectors = data["vectors"]
     PineconeClient().upsert_data.remote(index_name, vectors)
 
 
