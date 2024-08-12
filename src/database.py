@@ -2,9 +2,7 @@ import os
 
 import modal
 
-image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "pinecone-client"
-)
+image = modal.Image.debian_slim(python_version="3.11").pip_install("pinecone-client")
 with image.imports():
     import logging
     import os
@@ -79,13 +77,12 @@ class PineconeClient:
         ]
         return matches
 
+
 @app.function()
-def query(data: dict) -> list[dict]:
-    """Query the Pinecone index with a given query and return the results.
-    """
-    index_name = data["index_name"]
-    q_vector = data["q_vector"]
+def query(index_name: str, q_vector: list) -> list[dict]:
+    """Query the Pinecone index with a given query and return the results."""
     return PineconeClient().query_index.remote(index_name, q_vector)
+
 
 @app.function()
 def upsert(index_name: str, vectors: list[dict]):
