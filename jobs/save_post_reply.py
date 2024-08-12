@@ -78,21 +78,27 @@ def save_post_reply():
 
         # process tweets
         tweets = results["tweets"]
-        doc_embeds = [f_embed.remote(d["text"])[0] for d in tweets]
-        vectors = []
-        for d, e in zip(tweets, doc_embeds):
-            vectors.append({"id": d["id"], "values": e, "metadata": d["metadata"]})
-        f_upsert.remote(index_name="x-posts-markus-odenthal", vectors=vectors)
-        logger.info(f"{len(vectors)} posts upserted successfully!")
+        if tweets:
+            doc_embeds = [f_embed.remote(d["text"])[0] for d in tweets]
+            vectors = []
+            for d, e in zip(tweets, doc_embeds):
+                vectors.append({"id": d["id"], "values": e, "metadata": d["metadata"]})
+            f_upsert.remote(index_name="x-posts-markus-odenthal", vectors=vectors)
+            logger.info(f"{len(vectors)} posts upserted successfully!")
+        else:
+            logger.info("No new posts to process.")
 
         # proess replies
         replies = results["replies"]
-        doc_embeds = [f_embed.remote(d["text"])[0] for d in replies]
-        vectors = []
-        for d, e in zip(replies, doc_embeds):
-            vectors.append({"id": d["id"], "values": e, "metadata": d["metadata"]})
-        f_upsert.remote(index_name="x-comments-markus-odenthal", vectors=vectors)
-        logger.info(f"{len(vectors)} comments upserted successfully!")
+        if replies:
+            doc_embeds = [f_embed.remote(d["text"])[0] for d in replies]
+            vectors = []
+            for d, e in zip(replies, doc_embeds):
+                vectors.append({"id": d["id"], "values": e, "metadata": d["metadata"]})
+            f_upsert.remote(index_name="x-comments-markus-odenthal", vectors=vectors)
+            logger.info(f"{len(vectors)} comments upserted successfully!")
+        else:
+            logger.info("No new replies to process.")
 
         latest_post_id = results['latest_post_id']
         logger.info(f"Last post ID: {results['latest_post_id']}")
@@ -101,7 +107,7 @@ def save_post_reply():
     with open(store_path, "w") as file:
         json.dump(data, file)
     instance.commit()
-    logger.info("Data saving not yet implemented.")
+    logger.info("Data saved successfully")
     return None
 
 
