@@ -1,9 +1,10 @@
 import json
 import logging
 import pathlib
-from typing import Any, Dict
 import time
-from modal import App, Cron, Volume, Function
+from typing import Any, Dict
+
+from modal import App, Cron, Function, Volume
 
 # Set up logging
 logging.basicConfig(
@@ -15,41 +16,25 @@ logger = logging.getLogger(__name__)
 
 app = App("save_posts_replies_job")
 
-
-instance = Volume.from_name("instance")
-VOL_MOUNT_PATH = pathlib.Path("/instance")
-
-
 @app.function(
-    schedule=Cron("0 2 * * *"),
-    volumes={VOL_MOUNT_PATH: instance},
+    schedule=Cron("0 2 * * *")
 )
 def save_post_reply():
-    store_path = str(VOL_MOUNT_PATH / "data.json")
-    logger.info(f"Starting save_post_reply function. Reading data from {store_path}")
-
     try:
-        with open(store_path, "r") as file:
-            data: Dict[str, Any] = json.load(file)
-        logger.info(f"Successfully loaded data from {store_path}")
-    except FileNotFoundError:
-        logger.error(f"File not found: {store_path}")
-        data = {"users": {}, "max_post_id": 0}
-    except json.JSONDecodeError:
-        logger.error(f"Invalid JSON in file: {store_path}")
-        data = {"users": {}, "max_post_id": 0}
-    except Exception as e:
-        logger.exception(f"Unexpected error reading {store_path}: {str(e)}")
-        return
-
-    try:
+        read_data = Function.lookup("datastore", "read_data")
+        save_data = Function.lookup("datastore", "save_data")
         f_upsert = Function.lookup("pinecone", "upsert")
         f_accept_job = Function.lookup("x_client", "accept_job")
-        f_get_job_result_endpoint = Function.lookup("x_client", "get_job_result_endpoint")
+        f_get_job_result_endpoint = Function.lookup(
+            "x_client", "get_job_result_endpoint"
+        )
         f_embed = Function.lookup("openai_client", "embed")
     except Exception as e:
         logger.exception(f"Function lookup failed: {str(e)}")
         return
+
+    data = read_data.remote()
+ 
     for username, user_data in data.get("users", {}).items():
         latest_post_id = user_data.get("latest_post_id", 0)
         logger.info(f"Latest post ID for {username}: {latest_post_id}")
@@ -70,7 +55,7 @@ def save_post_reply():
             if retry_count > max_retries:
                 logger.error("Max retries exceeded. Exiting loop.")
                 break
-        # Placeholder for future implementation
+            # Placeholder for future implementation
             logger.info("Post processing completed. Ready to save data.")
 
         logger.info("Job completed, results received:")
@@ -100,13 +85,11 @@ def save_post_reply():
         else:
             logger.info("No new replies to process.")
 
-        latest_post_id = results['latest_post_id']
+        latest_post_id = results["latest_post_id"]
         logger.info(f"Last post ID: {results['latest_post_id']}")
         user_data["latest_post_id"] = latest_post_id
-    
-    with open(store_path, "w") as file:
-        json.dump(data, file)
-    instance.commit()
+
+    save_data.remote(data)
     logger.info("Data saved successfully")
     return None
 

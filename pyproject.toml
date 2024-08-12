@@ -16,14 +16,13 @@ langchain-anthropic = "^0.1.17"
 tweepy = "^4.14.0"
 pinecone = "^4.0.0"
 langchain-openai = "^0.1.19"
-flask-apscheduler = "^1.13.1"
 slack-sdk = "^3.31.0"
+openai = "^1.40.2"
 
 [tool.poetry.group.dev.dependencies]
-crawl4ai = { git = "https://github.com/unclecode/crawl4ai.git", branch = "main" }
 pandas = "^2.2.2"
 knowledge-storm = "^0.2.3"
-vulture = "^2.11"
+modal = "^0.64.10"
 
 [build-system]
 requires = ["poetry-core"]
