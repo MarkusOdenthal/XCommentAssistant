@@ -240,7 +240,7 @@ class XClient:
             while True:
                 list_tweets = client.get_list_tweets(
                     id=list_id,
-                    max_results=100,
+                    max_results=10,
                     expansions=[
                         "attachments.media_keys",
                         "referenced_tweets.id",
@@ -264,8 +264,11 @@ class XClient:
                 if list_tweet_data is None:
                     return None, None
                 users = {user["id"]: user for user in list_tweets.includes["users"]}
+                # longform and thread tweets extraction is missing
+
                 # media = {media["media_key"]: media for media in list_tweets.includes["media"]}
                 # to get images I need to use this: list_tweets.includes and match this then to the media id.
+                # all this new feature I also need then to add to the tweet/reply processing. (tweets to database)
                 # Filter out all post with media:
                 list_tweet_data = [
                     tweet for tweet in list_tweet_data if not tweet.attachments
@@ -281,6 +284,7 @@ class XClient:
                 else:
                     all_tweets.extend(list_tweet_data)
                     pagination_token = list_tweets.meta.get("next_token", None)
+            # can I move this part to the process tweets function? Is it already implemnted?
             all_tweets_clean = []
             for tweet in all_tweets:
                 if tweet.referenced_tweets is None or (
@@ -288,6 +292,8 @@ class XClient:
                     and tweet.in_reply_to_user_id == tweet.author_id
                 ):
                     all_tweets_clean.append(tweet)
+            # need refinement
+            all_tweets_clean = self.process_tweets.local(all_tweets_clean, latest_post_id)[0]
             return all_tweets_clean, users
         except tweepy.TweepyException as e:
             logging.error(
@@ -424,11 +430,8 @@ class XClient:
                 latest_post_id = reply["id"]
         return data, latest_post_id
 
-    # this will be the job that run in the background.
     @modal.method()
-    def get_all_post_replies_from_user(self, latest_post_id: int, username: str):
-        # we will here take the call and return directly an result. But triggern an Jobs that is running in the background. for each user.
-        # this also make sense because each user has it's own limit. So we will return then directly an success message. Or this will be the job and I build a extra endpoint to call this job.
+    def get_all_post_replies_from_user(self, latest_post_id: int, username: str) -> Dict:
         user_id = self.get_user_id.local(username=username)
         print(f"User ID: {user_id}")
     
@@ -463,11 +466,9 @@ class XClient:
             if reply["referenced_tweets"][0]["id"] not in missing_tweet_ids_list
         ]
 
-        # process replies
         replies_for_upsert, latest_post_id = self.process_replies_for_upload.local(
             replies, replies_original_post, latest_post_id
         )
-        # process post
         tweets_for_upsert, new_latest_post_id = self.process_tweets.local(
             tweets, latest_post_id
         )
@@ -479,11 +480,11 @@ class XClient:
 
     @app.local_entrypoint()
     def test():
-        post_replies = XClient().get_all_post_replies_from_user.local(
-            1822580819157983386, "markusodenthal"
-        )
-        return post_replies
-
+        # post_replies = XClient().get_all_post_replies_from_user.local(
+        #     1822580819157983386, "markusodenthal"
+        # )
+        all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1822977869045248064)
+        return None
 
 @app.function()
 def accept_job(latest_post_id: int, username: str):
