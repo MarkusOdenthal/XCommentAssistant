@@ -72,6 +72,7 @@ class XClient:
                         "public_metrics",
                         "conversation_id",
                         "non_public_metrics",
+                        "note_tweet",
                     ],
                     pagination_token=pagination_token,
                     expansions=["referenced_tweets.id", "in_reply_to_user_id"],
@@ -79,10 +80,17 @@ class XClient:
 
                 if user_tweets.data:
                     for tweet in user_tweets.data:
+                        note_tweet = tweet["data"].get("note_tweet", None)
+                        if note_tweet:
+                            tweet_text = note_tweet["text"]
+                            logger.info(f"Processed longform tweet: {str(tweet.id)}")
+                        else:
+                            tweet_text = tweet.text
+                            logger.info(f"Processed tweet: {str(tweet.id)}")
                         # Convert complex objects to dictionaries or primitive types
                         tweet_dict = {
                             "id": tweet.id,
-                            "text": tweet.text,
+                            "text": tweet_text,
                             "author_id": tweet.author_id,
                             "created_at": tweet.created_at.isoformat()
                             if tweet.created_at
@@ -178,7 +186,7 @@ class XClient:
                 response = client.get_tweets(
                     ids=ids_chunk,
                     expansions=["referenced_tweets.id", "author_id"],
-                    tweet_fields=["created_at", "public_metrics", "conversation_id"],
+                    tweet_fields=["created_at", "public_metrics", "conversation_id", "note_tweet"],
                 )
                 missing_tweet_ids = [
                     int(error["value"])
@@ -196,9 +204,16 @@ class XClient:
             missing_tweet_ids_list.extend(missing_tweet_ids)
 
             for tweet in tweets:
+                note_tweet = tweet["data"].get("note_tweet", None)
+                if note_tweet:
+                    tweet_text = note_tweet["text"]
+                    logger.info(f"Processed longform tweet: {str(tweet.id)}")
+                else:
+                    tweet_text = tweet.text
+                    logger.info(f"Processed tweet: {str(tweet.id)}")
                 tweet_dict = {
                     "id": tweet.id,
-                    "text": tweet.text,
+                    "text": tweet_text,
                     "created_at": tweet.created_at.isoformat()
                     if tweet.created_at
                     else None,
@@ -253,6 +268,7 @@ class XClient:
                         "author_id",
                         "in_reply_to_user_id",
                         "attachments",
+                        "note_tweet"
                     ],
                     media_fields=["url", "type"],
                     user_fields=["username", "description", "id"],
@@ -263,9 +279,17 @@ class XClient:
                 list_tweet_data = list_tweets.data
                 if list_tweet_data is None:
                     return None, None
-                users = {user["id"]: user for user in list_tweets.includes["users"]}
-                # longform and thread tweets extraction is missing
+                
 
+                # Convert users to dictionaries
+                users = {
+                    user["id"]: {
+                        "id": user["id"],
+                        "username": user["name"],
+                        "description": user.get("description", "")
+                    }
+                    for user in list_tweets.includes["users"]
+                }
                 # media = {media["media_key"]: media for media in list_tweets.includes["media"]}
                 # to get images I need to use this: list_tweets.includes and match this then to the media id.
                 # all this new feature I also need then to add to the tweet/reply processing. (tweets to database)
@@ -293,7 +317,9 @@ class XClient:
                 ):
                     all_tweets_clean.append(tweet)
             # need refinement
-            all_tweets_clean = self.process_tweets.local(all_tweets_clean, latest_post_id)[0]
+            all_tweets_clean = self.process_tweets.local(
+                all_tweets_clean, latest_post_id
+            )[0]
             return all_tweets_clean, users
         except tweepy.TweepyException as e:
             logging.error(
@@ -331,7 +357,8 @@ class XClient:
                     f"Error sorting tweets for conversation {conversation_id}: {e}"
                 )
                 continue
-
+            
+            # threads with more than one tweet
             if len(sorted_tweets) > 1:
                 combined_text = "\n\n".join(
                     tweet["text"] for tweet in reversed(sorted_tweets)
@@ -354,15 +381,24 @@ class XClient:
                     "is_thread": True,
                     "author_id": sorted_tweets[0]["author_id"],
                 }
+                logger.info(f"Processed thread: {str(sorted_tweets[0]['id'])}")
+            # tweets and longform tweets
             else:
                 tweet = sorted_tweets[0]
                 all_metrics = {**tweet["public_metrics"]}
                 if tweet["non_public_metrics"]:
                     all_metrics.update(tweet["non_public_metrics"])
-      
+                
+                note_tweet = tweet["data"].get("note_tweet", None)
+                if note_tweet:
+                    text = tweet["data"]["note_tweet"]["text"]
+                    logger.info(f"Note tweet: {str(tweet['id'])}")
+                else:
+                    text = tweet["text"]
+                    logger.info(f"Processed tweet: {str(tweet['id'])}")
                 processed_tweet = {
                     "conversation_id": conversation_id,
-                    "text": tweet["text"],
+                    "text": text,
                     "created_at": tweet["created_at"],
                     "metrics": all_metrics,
                     "tweet_ids": [str(tweet["id"])],
@@ -380,6 +416,7 @@ class XClient:
                 "created_at": tweet["created_at"],
                 "is_thread": tweet["is_thread"],
                 **tweet["metrics"],
+                "author_id": tweet["author_id"],
             }
             tweets_clean.append(
                 {
@@ -431,10 +468,12 @@ class XClient:
         return data, latest_post_id
 
     @modal.method()
-    def get_all_post_replies_from_user(self, latest_post_id: int, username: str) -> Dict:
+    def get_all_post_replies_from_user(
+        self, latest_post_id: int, username: str
+    ) -> Dict:
         user_id = self.get_user_id.local(username=username)
         print(f"User ID: {user_id}")
-    
+
         end_time = datetime.datetime.now() - datetime.timedelta(days=5)
         posts = self.get_user_posts.local(user_id, latest_post_id, end_time)
         print(f"Number of posts: {len(posts)}")
@@ -480,15 +519,22 @@ class XClient:
 
     @app.local_entrypoint()
     def test():
-        # post_replies = XClient().get_all_post_replies_from_user.local(
-        #     1822580819157983386, "markusodenthal"
-        # )
-        all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1822977869045248064)
+        post_replies = XClient().get_all_post_replies_from_user.local(
+            0, "markusodenthal"
+        )
+        #all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1823402311349150034)
         return None
+
 
 @app.function()
 def accept_job(latest_post_id: int, username: str):
     call = XClient().get_all_post_replies_from_user.spawn(latest_post_id, username)
+    return call.object_id
+
+
+@app.function()
+def accept_job_x_list(list_id: str, latest_post_id: int):
+    call = XClient().get_list_tweets.spawn(list_id, latest_post_id)
     return call.object_id
 
 
