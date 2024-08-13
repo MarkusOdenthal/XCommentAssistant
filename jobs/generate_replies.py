@@ -38,8 +38,8 @@ def generate_replies():
     slack_channel_id = engagement_list['slack_channel_id']
     list_id = engagement_list['id']
     # latest_post_id = engagement_list['latest_post_id']
-    latest_post_id = 1823354970827067787
-
+    latest_post_id = 1823412852440612925
+    
     call_id = accept_job_x_list.remote(list_id=list_id, latest_post_id=latest_post_id)
     time.sleep(10)
     results = get_job_result_endpoint.remote(call_id=call_id)

@@ -40,13 +40,13 @@ Some more information about me: Currently I'm working as a Machine Learning Engi
 
     COPYWRITING_STYLE = """When generating the reply, follow these guidelines:
 
-1. Avoid jargon, buzzwords, sales-y language, long sentences, flowery language (like: "Spot on, ..."), metaphors, analogies, clichés, and overused phrases.
+1. Avoid jargon, buzzwords, sales-y language, long sentences, flowery language (like: Spot on, game-changer), metaphors, analogies, clichés, and overused phrases.
 2. Use short, simple sentences for easier reading. Mix in some one or two-word sentences for impact, but vary sentence length to maintain interest.
 3. Start some sentences with transition words like "and," "but," "so," and "because" to improve flow and readability, even if it's not always grammatically correct.
 4. Write at an 8th-grade reading level, using clear, straightforward, and conversational language.
 5. Keep the tone engaging and add a touch of humor where appropriate.
 6. Prioritize clarity and readability over strict grammatical rules when it enhances the overall message and keeps readers engaged.
-
+7. Try to write you instead of me. This will make the reader feel more involved.
 Remember, the goal is to create a reply that's easy to understand, engaging to read, and effectively communicates the intended message."""
 
     try:
@@ -61,10 +61,17 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
     str_parser = StrOutputParser()
 
     gpt_4o_mini = ChatOpenAI(model="gpt-4o-mini", temperature=1.0)
+
+    social_media_agent_information_summary_prompt = hub.pull(
+        "social_media_agent_information_summary"
+    )
+    social_media_agent_information_summary_chain = (
+        social_media_agent_information_summary_prompt | gpt_4o_mini | xml_parser
+    )
+
     viral_social_media_comments_ideas_prompt = hub.pull(
         "viral_social_media_comments_ideas"
     )
-
     viral_social_media_comments_ideas_chain = (
         viral_social_media_comments_ideas_prompt | gpt_4o_mini | str_parser
     )
@@ -106,15 +113,25 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
             for idx, post in enumerate(example_posts)
         ]
     )
+    summary = social_media_agent_information_summary_chain.invoke(
+        {
+            "POST_TO_REPLY": tweet,
+            "OUR_PREVIOUS_POSTS": example_posts_str,
+            "OUR_PAST_REPLIES_AND_POSTS": example_comments_str,
+        }
+    )
+    relevant_previous_post_info = summary["root"][1]["relevant_previous_post_info"]
+    useful_past_reply_info = summary["root"][2]["useful_past_reply_info"]
 
     ideas = viral_social_media_comments_ideas_chain.invoke(
         {
             "AUDIENCE_INFO": AUDIENCE,
             "PERSONAL_INFORMATION": PERSONAL_INFORMATION,
-            "PREVIOUS_POSTS": example_posts_str,
-            "EXAMPLE_COMMENTS": example_comments_str,
+            "PREVIOUS_POSTS": relevant_previous_post_info,
+            "EXAMPLE_COMMENTS": useful_past_reply_info,
             "INFLUENCER_BIO": f"Name: {user_name}\nBio: {user_description}",
             "POST_TO_COMMENT_ON": tweet,
+            "COPYWRITING": COPYWRITING_STYLE,
         }
     )
 
@@ -122,8 +139,8 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
         {
             "AUDIENCE_INFO": AUDIENCE,
             "PERSONAL_INFORMATION": PERSONAL_INFORMATION,
-            "EXAMPLE_COMMENTS": example_comments_str,
-            "PREVIOUS_POSTS": example_posts_str,
+            "EXAMPLE_COMMENTS": useful_past_reply_info,
+            "PREVIOUS_POSTS": relevant_previous_post_info,
             "INFLUENCER_BIO": f"Name: {user_name}\nBio: {user_description}",
             "POST_TO_REPLY": tweet,
             "COPYWRITING_STYLE": COPYWRITING_STYLE,
@@ -138,7 +155,7 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
 def test_function():
     logger.info("Starting test function")
     generate_reply.local(
-        tweet="I love the new iPhone 13! It's so sleek and fast!",
-        user_name="Markus Odenthal",
-        user_description="I'm a tech enthusiast who loves to share my thoughts on the latest gadgets.",
+        tweet="Most businesses fail, not due to lack of effort, but lack of systems.",
+        user_name="MATT GRAY",
+        user_description="The Systems Guy” | Proven systems to grow a profitable audience with organic content. Founder & CEO @founderos",
     )
