@@ -12,7 +12,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 image = Image.debian_slim(python_version="3.11").pip_install(
-    "langchain", "langchain-anthropic", "langchain-core", "langchain-openai"
+    "langchain",
+    "langchain-anthropic",
+    "langchain-core",
+    "langchain-openai",
+    "langchainhub",
 )
 with image.imports():
     from langchain import hub

@@ -12,36 +12,39 @@ logger = logging.getLogger(__name__)
 image = Image.debian_slim(python_version="3.11").pip_install("cohere", "langsmith")
 with image.imports():
     import cohere
-    from langsmith import Client, traceable
-    from langsmith.run_helpers import get_current_run_tree
+    from langsmith import Client
+    from langsmith.run_trees import RunTree
+    from uuid import uuid4
 
 app = App("cohere", image=image, secrets=[Secret.from_name("SocialMediaManager")])
 
 
 @app.function()
 def topic_classification(post: str) -> str:
+    logger.info("Starting topic classification")
     ls_client = Client()
     co = cohere.Client(os.getenv("COHERE_API_KEY"))
 
-    @traceable(run_type="chain", name="topic_classification")
-    def helper(post: str) -> str:
-        response = co.classify(
-            model="dd74f49b-dfcb-45fc-ac5f-bafa23eff44b-ft", inputs=[post]
-        )
-        prediction = response.classifications[0].prediction
-        confidence = response.classifications[0].confidence
+    run_id = uuid4()
+    pipeline = RunTree(
+       name="topic_classification",
+       run_type="chain",
+       inputs={"post": post},
+       id=run_id,
+    )
+    response = co.classify(
+        model="dd74f49b-dfcb-45fc-ac5f-bafa23eff44b-ft", inputs=[post]
+    )
+    prediction = response.classifications[0].prediction
+    confidence = response.classifications[0].confidence
 
-        run = get_current_run_tree()
-        run_id = run.id
-        ls_client.create_feedback(
-            run_id,
-            key="confidence",
-            score=confidence,
-        )
-        return prediction
-
-    logger.info("Starting topic classification")
-    prediction = helper(post)
+    pipeline.end(outputs={"output": prediction})
+    pipeline.post()
+    ls_client.create_feedback(
+        run_id,
+        key="confidence",
+        score=confidence,
+    )
     logger.info("Topic classification completed")
     return prediction
 

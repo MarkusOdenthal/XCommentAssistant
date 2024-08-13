@@ -519,10 +519,10 @@ class XClient:
 
     @app.local_entrypoint()
     def test():
-        post_replies = XClient().get_all_post_replies_from_user.local(
-            0, "markusodenthal"
-        )
-        #all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1823402311349150034)
+        # post_replies = XClient().get_all_post_replies_from_user.local(
+        #     0, "markusodenthal"
+        # )
+        all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1823402311349150034)
         return None
 
 
