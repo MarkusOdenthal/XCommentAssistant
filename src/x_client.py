@@ -65,7 +65,7 @@ class XClient:
                     user_auth=True,
                     id=user_id,
                     end_time=end_time,
-                    max_results=100,
+                    max_results=os.getenv("MAX_RESULTS"),
                     since_id=max_post_id,
                     tweet_fields=[
                         "created_at",
@@ -206,7 +206,7 @@ class XClient:
             while True:
                 list_tweets = client.get_list_tweets(
                     id=list_id,
-                    max_results=100,
+                    max_results=os.getenv("MAX_RESULTS"),
                     expansions=[
                         "attachments.media_keys",
                         "referenced_tweets.id",
@@ -257,6 +257,8 @@ class XClient:
                 else:
                     all_tweets.extend(list_tweet_data)
                     pagination_token = list_tweets.meta.get("next_token", None)
+                
+                break
             # can I move this part to the process tweets function? Is it already implemnted?
             all_tweets_clean = []
             for tweet in all_tweets:
@@ -292,15 +294,9 @@ class XClient:
         processed_tweets = []
 
         for conversation_id, thread_tweets in threads.items():
-            try:
-                sorted_tweets = sorted(
-                    thread_tweets, key=lambda x: x["id"], reverse=True
-                )
-            except Exception as e:
-                logging.error(
-                    f"Error sorting tweets for conversation {conversation_id}: {e}"
-                )
-                continue
+            sorted_tweets = sorted(
+                thread_tweets, key=lambda x: x["id"], reverse=True
+            )
 
             # threads with more than one tweet
             if len(sorted_tweets) > 1:
@@ -329,6 +325,14 @@ class XClient:
             # tweets and longform tweets
             else:
                 tweet = sorted_tweets[0]
+                # exlude tweet where the author is replying to themselves
+                if (
+                    tweet["referenced_tweets"]
+                    and tweet["referenced_tweets"][0]["type"] == "replied_to"
+                    and tweet["in_reply_to_user_id"] == tweet["author_id"]
+                ):
+                    logger.info(f"Excluded tweet: {str(tweet['id'])}")
+                    continue
                 all_metrics = {**tweet["public_metrics"]}
                 if tweet["non_public_metrics"]:
                     all_metrics.update(tweet["non_public_metrics"])
@@ -468,12 +472,13 @@ class XClient:
         # post_replies = XClient().get_all_post_replies_from_user.local(
         #     1821294187352048124, "markusodenthal"
         # )
-        read_data = Function.lookup("datastore", "read_data")
-        data = read_data.remote()
-        engagement_list = data["users"]["markusodenthal"]["lists"][
-            "Increase Engagement"
-        ]
-        latest_post_id = engagement_list["latest_post_id"]
+        # read_data = Function.lookup("datastore", "read_data")
+        # data = read_data.remote()
+        # engagement_list = data["users"]["markusodenthal"]["lists"][
+        #     "Increase Engagement"
+        # ]
+        # latest_post_id = engagement_list["latest_post_id"]
+        latest_post_id = 1823768325551480969
         all_tweets_clean, users = XClient().get_list_tweets.local(
             "1821152727704994292", latest_post_id
         )
