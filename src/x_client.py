@@ -79,37 +79,7 @@ class XClient:
                 )
 
                 if user_tweets.data:
-                    for tweet in user_tweets.data:
-                        note_tweet = tweet["data"].get("note_tweet", None)
-                        if note_tweet:
-                            tweet_text = note_tweet["text"]
-                            logger.info(f"Processed longform tweet: {str(tweet.id)}")
-                        else:
-                            tweet_text = tweet.text
-                            logger.info(f"Processed tweet: {str(tweet.id)}")
-                        # Convert complex objects to dictionaries or primitive types
-                        tweet_dict = {
-                            "id": tweet.id,
-                            "text": tweet_text,
-                            "author_id": tweet.author_id,
-                            "created_at": tweet.created_at.isoformat()
-                            if tweet.created_at
-                            else None,
-                            "public_metrics": dict(tweet.public_metrics)
-                            if tweet.public_metrics
-                            else None,
-                            "conversation_id": tweet.conversation_id,
-                            "non_public_metrics": dict(tweet.non_public_metrics)
-                            if tweet.non_public_metrics
-                            else None,
-                            "referenced_tweets": [
-                                dict(ref) for ref in tweet.referenced_tweets
-                            ]
-                            if tweet.referenced_tweets
-                            else None,
-                            "in_reply_to_user_id": tweet.in_reply_to_user_id,
-                        }
-                        all_posts.append(tweet_dict)
+                    all_posts.extend(user_tweets.data)
 
                 pagination_token = user_tweets.meta.get("next_token", None)
                 if not pagination_token:
@@ -204,38 +174,14 @@ class XClient:
             missing_tweet_ids_list.extend(missing_tweet_ids)
 
             for tweet in tweets:
-                note_tweet = tweet["data"].get("note_tweet", None)
-                if note_tweet:
-                    tweet_text = note_tweet["text"]
-                    logger.info(f"Processed longform tweet: {str(tweet.id)}")
-                else:
-                    tweet_text = tweet.text
-                    logger.info(f"Processed tweet: {str(tweet.id)}")
-                tweet_dict = {
-                    "id": tweet.id,
-                    "text": tweet_text,
-                    "created_at": tweet.created_at.isoformat()
-                    if tweet.created_at
-                    else None,
-                    "public_metrics": dict(tweet.public_metrics)
-                    if tweet.public_metrics
-                    else None,
-                    "conversation_id": tweet.conversation_id,
-                    "in_reply_to_user_id": tweet.in_reply_to_user_id,
-                    "referenced_tweets": [dict(ref) for ref in tweet.referenced_tweets]
-                    if tweet.referenced_tweets
-                    else None,
-                    "author_id": tweet.author_id,
-                }
-
                 if (
-                    "in_reply_to_status_id" in tweet_dict
-                    and tweet_dict["in_reply_to_status_id"] is not None
+                    "in_reply_to_status_id" in tweet
+                    and tweet["in_reply_to_status_id"] is not None
                 ):
                     thread = self.fetch_full_thread(tweet.id)
                     original_posts.append(thread)
                 else:
-                    original_posts.append(tweet_dict)
+                    original_posts.append(tweet)
 
         return original_posts, missing_tweet_ids_list
 
@@ -336,12 +282,7 @@ class XClient:
         new_latest_post_id = latest_post_id
 
         for tweet in tweets:
-            try:
-                threads[tweet["conversation_id"]].append(tweet)
-                if new_latest_post_id is None or tweet["id"] > new_latest_post_id:
-                    new_latest_post_id = tweet["id"]
-            except AssertionError:
-                logging.error("Tweet attributes missing or improperly formatted")
+            threads[tweet["conversation_id"]].append(tweet)
             if new_latest_post_id is None or tweet["id"] > new_latest_post_id:
                 new_latest_post_id = tweet["id"]
 
@@ -519,10 +460,10 @@ class XClient:
 
     @app.local_entrypoint()
     def test():
-        # post_replies = XClient().get_all_post_replies_from_user.local(
-        #     0, "markusodenthal"
-        # )
-        all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1823402311349150034)
+        post_replies = XClient().get_all_post_replies_from_user.local(
+            1821294187352048124, "markusodenthal"
+        )
+        #all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1823402311349150034)
         return None
 
 
