@@ -21,9 +21,14 @@ app = App("cohere", image=image, secrets=[Secret.from_name("SocialMediaManager")
 
 @app.function()
 def topic_classification(post: str) -> str:
+    api_key = os.getenv("COHERE_API_KEY")
+    model_id = os.getenv("COHERE_MODEL_ID")
+    if not api_key or not model_id:
+        raise EnvironmentError("COHERE_API_KEY and COHERE_MODEL_ID must be set")
     logger.info("Starting topic classification")
     ls_client = Client()
-    co = cohere.Client(os.getenv("COHERE_API_KEY"))
+    co = cohere.Client(api_key)
+    model_id = os.getenv("COHERE_MODEL_ID")
 
     run_id = uuid4()
     pipeline = RunTree(
@@ -33,7 +38,7 @@ def topic_classification(post: str) -> str:
        id=run_id,
     )
     response = co.classify(
-        model="dd74f49b-dfcb-45fc-ac5f-bafa23eff44b-ft", inputs=[post]
+        model=model_id, inputs=[post]
     )
     prediction = response.classifications[0].prediction
     confidence = response.classifications[0].confidence
