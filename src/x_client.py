@@ -258,7 +258,6 @@ class XClient:
                     all_tweets.extend(list_tweet_data)
                     pagination_token = list_tweets.meta.get("next_token", None)
                 
-                break
             # can I move this part to the process tweets function? Is it already implemnted?
             all_tweets_clean = []
             for tweet in all_tweets:
