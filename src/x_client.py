@@ -206,7 +206,7 @@ class XClient:
             while True:
                 list_tweets = client.get_list_tweets(
                     id=list_id,
-                    max_results=10,
+                    max_results=100,
                     expansions=[
                         "attachments.media_keys",
                         "referenced_tweets.id",
