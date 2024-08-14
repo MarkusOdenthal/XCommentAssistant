@@ -13,26 +13,22 @@ logger = logging.getLogger(__name__)
 app = App("generate_replies_job")
 
 @app.function(
-    schedule=Cron("*/15 6-21 * * *"),
+    schedule=Cron("*/5 6-21 * * *"),
 )
 def generate_replies():
-    try:
-        read_data = Function.lookup("datastore", "read_data")
-        save_data = Function.lookup("datastore", "save_data")
-        accept_job_x_list = Function.lookup("x_client", "accept_job_x_list")
-        get_job_result_endpoint = Function.lookup("x_client", "get_job_result_endpoint")
-        topic_classification = Function.lookup("cohere", "topic_classification")
-        generate_reply = Function.lookup("reply_pipeline", "generate_reply")
-        send_message = Function.lookup("slack", "send_message")
-    except Exception as e:
-        logger.exception(f"Function lookup failed: {str(e)}")
-        return
+    read_data = Function.lookup("datastore", "read_data")
+    save_data = Function.lookup("datastore", "save_data")
+    accept_job_x_list = Function.lookup("x_client", "accept_job_x_list")
+    get_job_result_endpoint = Function.lookup("x_client", "get_job_result_endpoint")
+    topic_classification = Function.lookup("cohere", "topic_classification")
+    generate_reply = Function.lookup("reply_pipeline", "generate_reply")
+    send_message = Function.lookup("slack", "send_message")
     data = read_data.remote()
     engagement_list = data['users']['markusodenthal']['lists']['Increase Engagement']
     slack_channel_id = engagement_list['slack_channel_id']
     list_id = engagement_list['id']
     latest_post_id = engagement_list['latest_post_id']
-
+    
     call_id = accept_job_x_list.remote(list_id=list_id, latest_post_id=latest_post_id)
     time.sleep(10)
     results = get_job_result_endpoint.remote(call_id=call_id)
@@ -71,9 +67,7 @@ def generate_replies():
             user_name = "No user information available"
             user_description = "No user information available"
         reply, example_comment = generate_reply.remote(tweet=tweet_text, user_name=user_name, user_description=user_description)
-        # send reply to slack
         send_message.remote(
-            # add here channel id from file.
             channel_id=slack_channel_id,
             author_id=author_id,
             post_id=tweet_id,
@@ -82,9 +76,11 @@ def generate_replies():
         )  
     return None
 
-# define entry point for the job -> schedule every 15 minutes
 @app.local_entrypoint()
 def test_function():
+    """
+    _summary_: This function is used to test the generate_replies function
+    """
     logger.info("Starting test function")
     generate_replies.local()
     logger.info("Test function completed")

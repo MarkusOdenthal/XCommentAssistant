@@ -120,6 +120,7 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
             "OUR_PAST_REPLIES_AND_POSTS": example_comments_str,
         }
     )
+    post_analysis = summary["root"][0]["analysis"]
     relevant_previous_post_info = summary["root"][1]["relevant_previous_post_info"]
     useful_past_reply_info = summary["root"][2]["useful_past_reply_info"]
 
@@ -131,6 +132,7 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
             "EXAMPLE_COMMENTS": useful_past_reply_info,
             "INFLUENCER_BIO": f"Name: {user_name}\nBio: {user_description}",
             "POST_TO_COMMENT_ON": tweet,
+            "POST_ANALYSIS": post_analysis,
             "COPYWRITING": COPYWRITING_STYLE,
         }
     )
