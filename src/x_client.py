@@ -156,7 +156,12 @@ class XClient:
                 response = client.get_tweets(
                     ids=ids_chunk,
                     expansions=["referenced_tweets.id", "author_id"],
-                    tweet_fields=["created_at", "public_metrics", "conversation_id", "note_tweet"],
+                    tweet_fields=[
+                        "created_at",
+                        "public_metrics",
+                        "conversation_id",
+                        "note_tweet",
+                    ],
                 )
                 missing_tweet_ids = [
                     int(error["value"])
@@ -196,7 +201,7 @@ class XClient:
             raise ValueError("Provided list_id is not a valid non-empty string")
         all_tweets = []
         pagination_token = None
-
+        users = {}
         try:
             while True:
                 list_tweets = client.get_list_tweets(
@@ -214,7 +219,7 @@ class XClient:
                         "author_id",
                         "in_reply_to_user_id",
                         "attachments",
-                        "note_tweet"
+                        "note_tweet",
                     ],
                     media_fields=["url", "type"],
                     user_fields=["username", "description", "id"],
@@ -225,17 +230,15 @@ class XClient:
                 list_tweet_data = list_tweets.data
                 if list_tweet_data is None:
                     return None, None
-                
 
                 # Convert users to dictionaries
-                users = {
-                    user["id"]: {
-                        "id": user["id"],
+                for user in list_tweets.includes["users"]:
+                    user_id = user["id"]
+                    users[user_id] = {
+                        "id": user_id,
                         "username": user["name"],
-                        "description": user.get("description", "")
+                        "description": user.get("description", ""),
                     }
-                    for user in list_tweets.includes["users"]
-                }
                 # media = {media["media_key"]: media for media in list_tweets.includes["media"]}
                 # to get images I need to use this: list_tweets.includes and match this then to the media id.
                 # all this new feature I also need then to add to the tweet/reply processing. (tweets to database)
@@ -298,7 +301,7 @@ class XClient:
                     f"Error sorting tweets for conversation {conversation_id}: {e}"
                 )
                 continue
-            
+
             # threads with more than one tweet
             if len(sorted_tweets) > 1:
                 combined_text = "\n\n".join(
@@ -329,7 +332,7 @@ class XClient:
                 all_metrics = {**tweet["public_metrics"]}
                 if tweet["non_public_metrics"]:
                     all_metrics.update(tweet["non_public_metrics"])
-                
+
                 note_tweet = tweet["data"].get("note_tweet", None)
                 if note_tweet:
                     text = tweet["data"]["note_tweet"]["text"]
@@ -460,10 +463,20 @@ class XClient:
 
     @app.local_entrypoint()
     def test():
-        post_replies = XClient().get_all_post_replies_from_user.local(
-            1821294187352048124, "markusodenthal"
+        from modal import Function
+
+        # post_replies = XClient().get_all_post_replies_from_user.local(
+        #     1821294187352048124, "markusodenthal"
+        # )
+        read_data = Function.lookup("datastore", "read_data")
+        data = read_data.remote()
+        engagement_list = data["users"]["markusodenthal"]["lists"][
+            "Increase Engagement"
+        ]
+        latest_post_id = engagement_list["latest_post_id"]
+        all_tweets_clean, users = XClient().get_list_tweets.local(
+            "1821152727704994292", latest_post_id
         )
-        #all_tweets_clean, users = XClient().get_list_tweets.local("1821152727704994292", 1823402311349150034)
         return None
 
 
