@@ -2,6 +2,7 @@ import logging
 import os
 from modal import App, Image, Secret
 
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -9,12 +10,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-image = Image.debian_slim(python_version="3.11").pip_install("cohere", "langsmith")
+image = Image.debian_slim(python_version="3.11").pip_install("cohere", "langsmith", "langchain")
 with image.imports():
     import cohere
     from langsmith import Client
     from langsmith.run_trees import RunTree
     from uuid import uuid4
+    from langchain.callbacks.tracers.langchain import wait_for_all_tracers
 
 app = App("cohere", image=image, secrets=[Secret.from_name("SocialMediaManager")])
 
@@ -50,6 +52,7 @@ def topic_classification(post: str) -> str:
         key="confidence",
         score=confidence,
     )
+    wait_for_all_tracers()
     logger.info("Topic classification completed")
     return prediction
 
