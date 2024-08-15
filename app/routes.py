@@ -1,6 +1,5 @@
-from flask import request, current_app
+from flask import request
 from .x_client import initialize_twitter_client, get_tweet_statistics
-from .topic_classification import topic_classification
 import logging
 from langsmith import Client
 
@@ -29,24 +28,6 @@ def init_routes(app):
         except Exception as e:
             logger.error(f"An error occurred: {str(e)}", exc_info=True)
             return {"error": str(e)}, 500
-
-    @app.route("/interesting_topic_classification", methods=["POST"])
-    def interesting_topic_classifier():
-        try:
-            data = request.get_json()
-            tweet = data.get("tweet")
-
-            if not tweet:
-                logger.warning("No tweet provided in the request")
-                return {"error": "No tweet provided"}, 400
-
-            classification = topic_classification(tweet)
-            return {"classification": classification}
-
-        except Exception as e:
-            logger.error(f"An error occurred: {str(e)}", exc_info=True)
-            return {"error": str(e)}, 500
-    
         
     @app.route("/tweet_statistics", methods=["POST"])
     def tweet_statistics():
