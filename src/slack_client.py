@@ -187,6 +187,6 @@ def classification_webhook(payload: IncomingPayload):
     logger.info(f"Post: {post[:10]}, Label: {label}")
 
     # Call the function to send the data to Slack
-    send_classification_to_slack(post=post, label=label)
+    send_classification_to_slack.local(post=post, label=label)
 
     return HTMLResponse(f"<html>Notification sent for post: {post[:30]}...</html>")
