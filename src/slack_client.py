@@ -72,8 +72,10 @@ def send_message(
 ):
     slack_token = os.environ["SLACK_BOT_TOKEN"]
     client = WebClient(token=slack_token)
-    try:
-        block = [
+    response_post = client.chat_postMessage(
+        channel=channel_id,
+        text="New Post",
+        blocks=[
             {
                 "type": "section",
                 "text": {
@@ -111,17 +113,49 @@ def send_message(
                     "text": f"*New Post:* \nhttps://twitter.com/{author_id}/status/{post_id}",
                 },
             },
-        ]
-
-        response_post = client.chat_postMessage(
-            channel=channel_id, text="New Post", blocks=block
-        )
-        response_reply = client.chat_postMessage(
-            channel=channel_id, text=final_reply, thread_ts=response_post["ts"]
-        )
-        return None
-    except SlackApiError as e:
-        print(f"Error sending message: {e.response['error']}")
+        ],
+    )
+    response_reply = client.chat_postMessage(
+        channel=channel_id,
+        thread_ts=response_post["ts"],
+        text="Reply to the post",
+        blocks=[
+            {"type": "section", "text": {"type": "mrkdwn", "text": "Original post"}},
+            {"type": "divider"},
+            {
+                "type": "input",
+                "element": {
+                    "type": "plain_text_input",
+                    "multiline": True,
+                    "action_id": "plain_text_input-action",
+                    "initial_value": final_reply,
+                },
+                "label": {
+                    "type": "plain_text",
+                    "text": "Please refine your reply:",
+                    "emoji": True,
+                },
+            },
+            {
+                "type": "actions",
+                "elements": [
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "POST"},
+                        "value": "post",
+                        "style": "primary",
+                    },
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "REFINE"},
+                        "value": "post",
+                        "style": "danger",
+                    },
+                ],
+            },
+        ],
+    )
+    return None
 
 
 @app.function()
@@ -172,7 +206,7 @@ def send_classification_to_slack(post, label):
 @app.local_entrypoint()
 def test_function():
     logger.info("Starting test function")
-    send_classification_to_slack.local("This is a test post", "interesting")
+    # send_classification_to_slack.local("This is a test post", "interesting")
 
 
 @app.function()
