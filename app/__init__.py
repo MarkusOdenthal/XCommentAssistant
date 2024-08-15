@@ -1,8 +1,6 @@
 import logging
 from flask import Flask
-from flask_apscheduler import APScheduler
 from .routes import init_routes
-from .jobs import init_jobs
 from config import Config
 from .langchain_setup import load_chains
 
