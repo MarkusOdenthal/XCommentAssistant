@@ -1,4 +1,4 @@
-from modal import App, Cron, Function, Semaphore
+from modal import App, Cron, Function
 import logging
 import time
 
@@ -9,7 +9,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
-lock = Semaphore(1)
 
 app = App("generate_replies_job")
 
@@ -18,10 +17,6 @@ app = App("generate_replies_job")
     timeout=600
 )
 def generate_replies():
-    with lock.acquire(timeout=0) as acquired:
-        if not acquired:
-            logger.info("Another instance is already running. Exiting.")
-            return
     read_data = Function.lookup("datastore", "read_data")
     save_data = Function.lookup("datastore", "save_data")
     accept_job_x_list = Function.lookup("x_client", "accept_job_x_list")
@@ -32,6 +27,7 @@ def generate_replies():
     data = read_data.remote()
     x_lists = data['users']['markusodenthal']['lists']
     for list_name, list_data in x_lists.items():
+        logger.info(f"Processing list {list_name}")
         slack_channel_id = list_data['slack_channel_id']
         list_id = list_data['id']
         latest_post_id = list_data['latest_post_id']
