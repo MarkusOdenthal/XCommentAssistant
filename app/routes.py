@@ -2,14 +2,15 @@ from flask import request, current_app
 from .x_client import initialize_twitter_client, get_tweet_statistics
 from .topic_classification import topic_classification
 import logging
+from langsmith import Client
 
 logger = logging.getLogger(__name__)
 
 def init_routes(app):
     @app.route("/add_label_data_to_topic_classification", methods=["POST"])
     def add_label_data_to_topic_classification():
+        ls_client = Client()
         try:
-            ls_client = current_app.config['ls_client']
             data = request.get_json()
             post = data.get("post")
             label = data.get("label")
