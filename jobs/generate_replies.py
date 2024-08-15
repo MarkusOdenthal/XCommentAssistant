@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 app = App("generate_replies_job")
 
 @app.function(
-    schedule=Cron("*/5 6-21 * * *"),
+    schedule=Cron("*/15 6-21 * * *"),
     timeout=600
 )
 def generate_replies():

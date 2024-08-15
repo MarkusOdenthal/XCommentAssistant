@@ -1,10 +1,7 @@
-import json
 import logging
-import pathlib
 import time
-from typing import Any, Dict
 
-from modal import App, Cron, Function, Volume
+from modal import App, Cron, Function
 
 # Set up logging
 logging.basicConfig(
@@ -16,9 +13,8 @@ logger = logging.getLogger(__name__)
 
 app = App("save_posts_replies_job")
 
-@app.function(
-    schedule=Cron("0 2 * * *")
-)
+
+@app.function(schedule=Cron("0 2 * * *"), timeout=7200,)
 def save_post_reply():
     try:
         read_data = Function.lookup("datastore", "read_data")
@@ -34,7 +30,7 @@ def save_post_reply():
         return
 
     data = read_data.remote()
- 
+
     for username, user_data in data.get("users", {}).items():
         latest_post_id = user_data.get("latest_post_id", 0)
         logger.info(f"Latest post ID for {username}: {latest_post_id}")

@@ -56,6 +56,7 @@ class XClient:
 
     @modal.method()
     def get_user_posts(self, user_id: int, max_post_id: int, end_time=None):
+        logger.info(f"Max post ID: {max_post_id}")
         client = self.client
         all_posts = []
         pagination_token = None
@@ -66,7 +67,8 @@ class XClient:
                     id=user_id,
                     end_time=end_time,
                     max_results=os.getenv("MAX_RESULTS"),
-                    since_id=max_post_id,
+                    since_id=max_post_id,# TODO: Add here the author_id to the tweet_fields
+                    user_fields=["id"],
                     tweet_fields=[
                         "created_at",
                         "public_metrics",
@@ -77,14 +79,17 @@ class XClient:
                     pagination_token=pagination_token,
                     expansions=["referenced_tweets.id", "in_reply_to_user_id"],
                 )
-
+                
                 if user_tweets.data:
+                    # add author_id because it is not included in this call but need for pinecone
+                    for tweet in user_tweets.data:
+                        tweet.author_id = user_id
                     all_posts.extend(user_tweets.data)
 
                 pagination_token = user_tweets.meta.get("next_token", None)
                 if not pagination_token:
                     break
-
+                break # TODO: Remove this break
             return all_posts
         except tweepy.TweepyException as e:
             return {"error": f"RequestException: {e}"}
@@ -468,19 +473,19 @@ class XClient:
     def test():
         from modal import Function
 
-        # post_replies = XClient().get_all_post_replies_from_user.local(
-        #     1821294187352048124, "markusodenthal"
-        # )
+        post_replies = XClient().get_all_post_replies_from_user.local(
+            1821294187352048124, "markusodenthal"
+        )
         # read_data = Function.lookup("datastore", "read_data")
         # data = read_data.remote()
         # engagement_list = data["users"]["markusodenthal"]["lists"][
         #     "Increase Engagement"
         # ]
         # latest_post_id = engagement_list["latest_post_id"]
-        latest_post_id = 1823768325551480969
-        all_tweets_clean, users = XClient().get_list_tweets.local(
-            "1821152727704994292", latest_post_id
-        )
+        # latest_post_id = 1823768325551480969
+        # all_tweets_clean, users = XClient().get_list_tweets.local(
+        #     "1821152727704994292", latest_post_id
+        # )
         return None
 
 
