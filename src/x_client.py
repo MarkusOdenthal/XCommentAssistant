@@ -89,7 +89,6 @@ class XClient:
                 pagination_token = user_tweets.meta.get("next_token", None)
                 if not pagination_token:
                     break
-                break # TODO: Remove this break
             return all_posts
         except tweepy.TweepyException as e:
             return {"error": f"RequestException: {e}"}
