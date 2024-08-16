@@ -88,28 +88,6 @@ def send_message(
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Here is some inspiration from a past reply.\n*Similarity Score: {round(example_comment['score'], 2)}*",
-                },
-            },
-            {"type": "divider"},
-            {
-                "type": "section",
-                "fields": [
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Post:*\n{example_comment['metadata']['original_post']}",
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*My Reply:*\n{example_comment['metadata']['reply']}",
-                    },
-                ],
-            },
-            {"type": "divider"},
-            {
-                "type": "section",
-                "text": {
-                    "type": "mrkdwn",
                     "text": f"*New Post:* \nhttps://twitter.com/{author_id}/status/{post_id}",
                 },
             },
@@ -121,6 +99,8 @@ def send_message(
         text="Reply to the post",
         blocks=[
             {"type": "section", "text": {"type": "mrkdwn", "text": "Original post"}},
+            {"type": "divider"},
+            {"type": "section", "text": {"type": "mrkdwn", "text": "final_reply"}},
             {"type": "divider"},
             {
                 "type": "input",
