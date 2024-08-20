@@ -1,7 +1,7 @@
 import logging
 import os
 from modal import App, Image, Secret
-
+import time
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,8 +52,9 @@ def topic_classification(post: str) -> str:
         key="confidence",
         score=confidence,
     )
-    wait_for_all_tracers()
     logger.info("Topic classification completed")
+    time.sleep(5)
+    wait_for_all_tracers()
     return prediction
 
 @app.local_entrypoint()

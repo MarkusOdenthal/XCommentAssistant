@@ -31,7 +31,6 @@ def generate_replies():
         slack_channel_id = list_data['slack_channel_id']
         list_id = list_data['id']
         latest_post_id = list_data['latest_post_id']
-        latest_post_id += 1
     
         call_id = accept_job_x_list.remote(list_id=list_id, latest_post_id=latest_post_id)
         time.sleep(10)
@@ -49,6 +48,7 @@ def generate_replies():
             logger.info("Post processing completed. Ready to save data.")
         logger.info("Job completed, results received:")
         tweets, users = results["result"]
+        logger.info(f"Number of tweets {str(len(tweets))}")
 
         for tweet in tweets:
             tweet_text = tweet.get("text")

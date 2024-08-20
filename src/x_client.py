@@ -250,18 +250,22 @@ class XClient:
                 list_tweet_data = [
                     tweet for tweet in list_tweet_data if not tweet.attachments
                 ]
-                tweet_ids = [tweet.id for tweet in list_tweet_data]
-                min_tweet_id = min(tweet_ids)
-                if min_tweet_id <= latest_post_id:
-                    list_tweet_data = [
-                        tweet for tweet in list_tweet_data if tweet.id > latest_post_id
-                    ]
-                    all_tweets.extend(list_tweet_data)
-                    break
+                if list_tweet_data:
+                    # Filter tweets before adding to all_tweets
+                    new_tweets = [tweet for tweet in list_tweet_data if tweet.id > latest_post_id]
+                    all_tweets.extend(new_tweets)
+                    
+                    # Check if we've reached or passed the latest_post_id
+                    if any(tweet.id <= latest_post_id for tweet in list_tweet_data):
+                        break
                 else:
-                    all_tweets.extend(list_tweet_data)
-                    pagination_token = list_tweets.meta.get("next_token", None)
-                
+                    # No more tweets to process
+                    break
+
+                pagination_token = list_tweets.meta.get("next_token", None)
+                if not pagination_token:
+                    break
+
             # can I move this part to the process tweets function? Is it already implemnted?
             all_tweets_clean = []
             for tweet in all_tweets:
@@ -291,8 +295,6 @@ class XClient:
 
         for tweet in tweets:
             threads[tweet["conversation_id"]].append(tweet)
-            if new_latest_post_id is None or tweet["id"] > new_latest_post_id:
-                new_latest_post_id = tweet["id"]
 
         processed_tweets = []
 
@@ -362,6 +364,9 @@ class XClient:
 
         tweets_clean = []
         for tweet in processed_tweets:
+            post_tweet_id = int(tweet["tweet_ids"][-1])
+            if new_latest_post_id is None or post_tweet_id > new_latest_post_id:
+                new_latest_post_id = post_tweet_id
             metadata = {
                 "text": tweet["text"],
                 "created_at": tweet["created_at"],
@@ -472,19 +477,22 @@ class XClient:
     def test():
         from modal import Function
 
-        post_replies = XClient().get_all_post_replies_from_user.local(
-            1821294187352048124, "markusodenthal"
-        )
+        #post_replies = XClient().get_all_post_replies_from_user.local(
+        #    1821294187352048124, "markusodenthal"
+        #)
         # read_data = Function.lookup("datastore", "read_data")
         # data = read_data.remote()
         # engagement_list = data["users"]["markusodenthal"]["lists"][
-        #     "Increase Engagement"
+        #     "Small Accounts"
         # ]
         # latest_post_id = engagement_list["latest_post_id"]
-        # latest_post_id = 1823768325551480969
-        # all_tweets_clean, users = XClient().get_list_tweets.local(
-        #     "1821152727704994292", latest_post_id
-        # )
+        # list_id = engagement_list["id"]
+        latest_post_id = 1825233303273697590
+        list_id = "1825779869612916862"
+        #latest_post_id = 1823768325551480969
+        all_tweets_clean, users = XClient().get_list_tweets.local(
+            list_id, latest_post_id
+        )
         return None
 
 

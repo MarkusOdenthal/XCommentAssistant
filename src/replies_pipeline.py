@@ -23,6 +23,7 @@ with image.imports():
     from langchain_anthropic import ChatAnthropic
     from langchain_core.output_parsers import StrOutputParser, XMLOutputParser
     from langchain_openai import ChatOpenAI
+    import uuid
 
 app = App(
     "reply_pipeline", image=image, secrets=[Secret.from_name("SocialMediaManager")]
@@ -59,6 +60,8 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
     # load chains
     xml_parser = XMLOutputParser()
     str_parser = StrOutputParser()
+
+    config = {"metadata": {"conversation_id": str(uuid.uuid4())}}
 
     gpt_4o_mini = ChatOpenAI(model="gpt-4o-mini", temperature=1.0)
 
@@ -113,12 +116,14 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
             for idx, post in enumerate(example_posts)
         ]
     )
+
     summary = social_media_agent_information_summary_chain.invoke(
         {
             "POST_TO_REPLY": tweet,
             "OUR_PREVIOUS_POSTS": example_posts_str,
             "OUR_PAST_REPLIES_AND_POSTS": example_comments_str,
-        }
+        },
+        config=config
     )
     post_analysis = summary["root"][0]["analysis"]
     relevant_previous_post_info = summary["root"][1]["relevant_previous_post_info"]
@@ -134,7 +139,8 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
             "POST_TO_COMMENT_ON": tweet,
             "POST_ANALYSIS": post_analysis,
             "COPYWRITING": COPYWRITING_STYLE,
-        }
+        },
+        config=config
     )
 
     final_comment = viral_social_media_comments_refine_chain.invoke(
@@ -147,7 +153,8 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
             "POST_TO_REPLY": tweet,
             "COPYWRITING_STYLE": COPYWRITING_STYLE,
             "REPLY_IDEAS": ideas,
-        }
+        },
+        config=config
     )
     final_reply = final_comment["root"][1]["final_reply"]
     return final_reply, example_comments[0]
