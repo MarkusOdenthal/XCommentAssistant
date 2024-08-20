@@ -480,15 +480,13 @@ class XClient:
         #post_replies = XClient().get_all_post_replies_from_user.local(
         #    1821294187352048124, "markusodenthal"
         #)
-        # read_data = Function.lookup("datastore", "read_data")
-        # data = read_data.remote()
-        # engagement_list = data["users"]["markusodenthal"]["lists"][
-        #     "Small Accounts"
-        # ]
-        # latest_post_id = engagement_list["latest_post_id"]
-        # list_id = engagement_list["id"]
-        latest_post_id = 1825233303273697590
-        list_id = "1825779869612916862"
+        read_data = Function.lookup("datastore", "read_data")
+        data = read_data.remote()
+        engagement_list = data["users"]["markusodenthal"]["lists"][
+            "Small Accounts"
+        ]
+        latest_post_id = engagement_list["latest_post_id"]
+        list_id = engagement_list["id"]
         #latest_post_id = 1823768325551480969
         all_tweets_clean, users = XClient().get_list_tweets.local(
             list_id, latest_post_id

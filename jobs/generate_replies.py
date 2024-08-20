@@ -48,6 +48,9 @@ def generate_replies():
             logger.info("Post processing completed. Ready to save data.")
         logger.info("Job completed, results received:")
         tweets, users = results["result"]
+        if len(tweets) == 0:
+            logger.info("No tweets found, skipping list.")
+            continue
         logger.info(f"Number of tweets {str(len(tweets))}")
 
         for tweet in tweets:
