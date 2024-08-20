@@ -54,17 +54,17 @@ def generate_replies():
         logger.info(f"Number of tweets {str(len(tweets))}")
 
         for tweet in tweets:
+            tweet_id = int(tweet.get("id"))
+            if tweet_id > latest_post_id:
+                latest_post_id = tweet_id
+                list_data['latest_post_id'] = latest_post_id
+                save_data.spawn(data)
             tweet_text = tweet.get("text")
             classification = topic_classification.remote(post=tweet_text)
             if classification != "interesting_topic":
                 continue
 
             author_id = tweet["metadata"].get("author_id")
-            tweet_id = int(tweet.get("id"))
-            if tweet_id > latest_post_id:
-                latest_post_id = tweet_id
-                list_data['latest_post_id'] = latest_post_id
-                save_data.remote(data)
             user = users.get(author_id)
             if user:
                 user_name = user.get("username")
@@ -74,7 +74,7 @@ def generate_replies():
                 user_name = "No user information available"
                 user_description = "No user information available"
             reply, example_comment = generate_reply.remote(tweet=tweet_text, user_name=user_name, user_description=user_description)
-            send_message.remote(
+            send_message.spawn(
                 channel_id=slack_channel_id,
                 author_id=author_id,
                 post_id=tweet_id,
