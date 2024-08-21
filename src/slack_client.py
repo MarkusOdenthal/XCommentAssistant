@@ -67,8 +67,7 @@ def send_message(
     channel_id: str,
     author_id: str,
     post_id: str,
-    final_reply: str,
-    example_comment: dict,
+    final_reply: str
 ):
     slack_token = os.environ["SLACK_BOT_TOKEN"]
     client = WebClient(token=slack_token)
@@ -96,44 +95,7 @@ def send_message(
     response_reply = client.chat_postMessage(
         channel=channel_id,
         thread_ts=response_post["ts"],
-        text="Reply to the post",
-        blocks=[
-            {"type": "section", "text": {"type": "mrkdwn", "text": "Original post"}},
-            {"type": "divider"},
-            {"type": "section", "text": {"type": "mrkdwn", "text": "final_reply"}},
-            {"type": "divider"},
-            {
-                "type": "input",
-                "element": {
-                    "type": "plain_text_input",
-                    "multiline": True,
-                    "action_id": "plain_text_input-action",
-                    "initial_value": final_reply,
-                },
-                "label": {
-                    "type": "plain_text",
-                    "text": "Please refine your reply:",
-                    "emoji": True,
-                },
-            },
-            {
-                "type": "actions",
-                "elements": [
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "POST"},
-                        "value": "post",
-                        "style": "primary",
-                    },
-                    {
-                        "type": "button",
-                        "text": {"type": "plain_text", "text": "REFINE"},
-                        "value": "post",
-                        "style": "danger",
-                    },
-                ],
-            },
-        ],
+        text=final_reply,
     )
     return None
 
@@ -142,9 +104,13 @@ def send_message(
 def send_classification_to_slack(post, label):
     slack_token = os.environ["SLACK_BOT_TOKEN"]
     client = WebClient(token=slack_token)
+
+    truncated_post = post[:2000]
+
     try:
         response = client.chat_postMessage(
             channel="C07BPF7TULQ",
+            text="New Classifcation Example",
             blocks=[
                 {
                     "type": "section",
@@ -161,17 +127,19 @@ def send_classification_to_slack(post, label):
                     "elements": [
                         {
                             "type": "button",
+                            "action_id": "interesting_topic",
                             "text": {"type": "plain_text", "text": "interesting_topic"},
-                            "value": post,
+                            "value": truncated_post,
                             "style": "primary",
                         },
                         {
                             "type": "button",
+                            "action_id": "uninteresting_topic",
                             "text": {
                                 "type": "plain_text",
                                 "text": "uninteresting_topic",
                             },
-                            "value": post,
+                            "value": truncated_post,
                             "style": "danger",
                         },
                     ],
