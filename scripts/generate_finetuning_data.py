@@ -7,8 +7,14 @@ ls_client = Client()
 label_data = ls_client.list_examples(dataset_name="XCommentClassification")
 
 for entry in label_data:
-    post = entry.inputs["text"]
-    label = entry.outputs["label"]
+    try:
+        post = entry.inputs["text"]
+    except KeyError:
+        post = entry.inputs["post"]
+    try:
+        label = entry.outputs["label"]
+    except KeyError:    
+        label = entry.outputs["output"]
     formatted_entry = {"text": post, "label": label}
     formatted_data.append(formatted_entry)
 

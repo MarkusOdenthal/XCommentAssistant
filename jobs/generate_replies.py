@@ -73,12 +73,14 @@ def generate_replies():
                 logger.info(f"No user information available for author_id {author_id}")
                 user_name = "No user information available"
                 user_description = "No user information available"
-            reply = generate_reply.remote(tweet=tweet_text, user_name=user_name, user_description=user_description)
+            ideas, top_comments, final_reply = generate_reply.remote(tweet=tweet_text, user_name=user_name, user_description=user_description)
             send_message.spawn(
                 channel_id=slack_channel_id,
                 author_id=author_id,
                 post_id=tweet_id,
-                final_reply=reply
+                ideas=ideas,
+                top_comments=top_comments,
+                final_reply=final_reply
             )  
     return None
 

@@ -67,6 +67,8 @@ def send_message(
     channel_id: str,
     author_id: str,
     post_id: str,
+    ideas: str,
+    top_comments: str,
     final_reply: str
 ):
     slack_token = os.environ["SLACK_BOT_TOKEN"]
@@ -88,6 +90,34 @@ def send_message(
                 "text": {
                     "type": "mrkdwn",
                     "text": f"*New Post:* \nhttps://twitter.com/{author_id}/status/{post_id}",
+                },
+            },
+        ],
+    )
+    response_reply = client.chat_postMessage(
+        channel=channel_id,
+        thread_ts=response_post["ts"],
+        text="💡 Ideas",
+        blocks=[
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*Ideas:* \n{ideas}",
+                },
+            },
+        ],
+    )
+    response_reply = client.chat_postMessage(
+        channel=channel_id,
+        thread_ts=response_post["ts"],
+        text="🔝 Top Comments",
+        blocks=[
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"*Top Comments:* \n{top_comments}",
                 },
             },
         ],

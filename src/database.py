@@ -95,11 +95,11 @@ def upsert(index_name: str, vectors: list[dict]):
 
 
 @app.local_entrypoint()
-def main(query: str):
+def main():
     """Creates the collection if it doesn't exist, wiping it first if requested.
 
     Note that this script can only be run if the `WCS_ADMIN_KEY` is set in the `wiki-weaviate` secret.
 
     Run this function with `modal run database.py`."""
-    index_name = "..."
+    index_name = "x-only-comments-markus-odenthal"
     PineconeClient().create_index.remote(index_name)
