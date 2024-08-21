@@ -32,23 +32,26 @@ app = App(
 
 @app.function()
 def generate_reply(tweet: str, user_name: str, user_description: str):
-    AUDIENCE = """Time-constrained solopreneurs and founders with valuable expertise who want to rapidly increase engagement and attract high-quality customers on X through a premium, personalized AI-assisted ghostwriting service for strategic real-time replies."""
 
-    PERSONAL_INFORMATION = """Name: Markus Odenthal
-Twitter Bio: Posts on staying valuable in the AI era. How to use AI to share your human expertise on X. + sharing my insights on my journey to becoming the REPLY GUY.
-Current Follower Count: 800
-Some more information about me: Currently I'm working as a Machine Learning Engineer in my 9-5. I love my Job and I'm passionate about how AI can help us to archive more. I also really like helping other people and connect and learn from them. I'm a big fan of the "build in public" movement and I'm trying to help other people to get more visibility on X by giving them tips and tricks on how to engage with their audience. Special the replying to comments is a big part of my strategy and I'm always looking for new ways to improve my replies. For this I'm looking for ways to use AI to improve this replies but still keep them human. We need a good combination of human and AI."""
+    def rerank_results(results, similarity_weight=0.7, engagement_weight=0.3):
+        max_engagement = max(r['metadata'].get('reply_engagements', 0) for r in results)
+        for result in results:
+            similarity_score = result['score']  # Assuming this is the similarity score from 0-1
+            engagement_count = result['metadata'].get('reply_engagements', 0)  # Assuming this field exists
+        
+            # Normalize engagement count (you may need to adjust this based on your data)
+            normalized_engagement = engagement_count / max_engagement if max_engagement > 0 else 0
 
-    COPYWRITING_STYLE = """When generating the reply, follow these guidelines:
+            # Calculate combined score
+            combined_score = (similarity_score * similarity_weight) + (normalized_engagement * engagement_weight)
 
-1. Avoid jargon, buzzwords, sales-y language, long sentences, flowery language (like: Spot on, game-changer), metaphors, analogies, clichés, and overused phrases.
-2. Use short, simple sentences for easier reading. Mix in some one or two-word sentences for impact, but vary sentence length to maintain interest.
-3. Start some sentences with transition words like "and," "but," "so," and "because" to improve flow and readability, even if it's not always grammatically correct.
-4. Write at an 8th-grade reading level, using clear, straightforward, and conversational language.
-5. Keep the tone engaging and add a touch of humor where appropriate.
-6. Prioritize clarity and readability over strict grammatical rules when it enhances the overall message and keeps readers engaged.
-7. Try to write you instead of me. This will make the reader feel more involved.
-Remember, the goal is to create a reply that's easy to understand, engaging to read, and effectively communicates the intended message."""
+            result['combined_score'] = combined_score
+
+        # Sort results by combined score in descending order
+        return sorted(results, key=lambda x: x['combined_score'], reverse=True)
+
+    OUR_AUDIENCE = """I help mid-career tech professionals (30-40 years old) leverage smart systems and automation to exponentially grow their X presence, attract high-value clients, and maintain work-life balance."""
+    CONTENT_STRATEGY = """I share data-driven insights on X growth hacks, automated engagement strategies, and system optimization techniques specifically for tech professionals building their personal brand on X."""
 
     try:
         query = Function.lookup("pinecone", "query")
@@ -59,25 +62,10 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
 
     # load chains
     xml_parser = XMLOutputParser()
-    str_parser = StrOutputParser()
 
     config = {"metadata": {"conversation_id": str(uuid.uuid4())}}
 
     gpt_4o_mini = ChatOpenAI(model="gpt-4o-mini", temperature=1.0)
-
-    social_media_agent_information_summary_prompt = hub.pull(
-        "social_media_agent_information_summary"
-    )
-    social_media_agent_information_summary_chain = (
-        social_media_agent_information_summary_prompt | gpt_4o_mini | xml_parser
-    )
-
-    viral_social_media_comments_ideas_prompt = hub.pull(
-        "viral_social_media_comments_ideas"
-    )
-    viral_social_media_comments_ideas_chain = (
-        viral_social_media_comments_ideas_prompt | gpt_4o_mini | str_parser
-    )
 
     gpt4o = ChatOpenAI(model="gpt-4o", temperature=1.0)
     sonnet_3_5_0 = ChatAnthropic(
@@ -87,23 +75,14 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
     )
     sonnet_3_5_0_with_fallback = sonnet_3_5_0.with_fallbacks([gpt4o])
 
-    viral_social_media_comments_refine_prompt = hub.pull(
-        "viral_social_media_comments_refine"
-    )
-    viral_social_media_comments_refine_chain = (
-        viral_social_media_comments_refine_prompt
-        | sonnet_3_5_0_with_fallback
-        | xml_parser
-    )
-
     tweet_embed = embed.remote([tweet])[0]
     example_comments = query.remote(
-        index_name="x-comments-markus-odenthal", q_vector=tweet_embed
+        index_name="x-comments-markus-odenthal", q_vector=tweet_embed, top_k=100
     )
     example_comments_str = "\n".join(
         [
             f"Post: {idx + 1}\n{comment['metadata']['original_post']}\n{'-'*50}\nReply: {idx + 1}\n{comment['metadata']['reply']}\n{'='*50}"
-            for idx, comment in enumerate(example_comments)
+            for idx, comment in enumerate(example_comments[:10])
         ]
     )
 
@@ -117,54 +96,79 @@ Remember, the goal is to create a reply that's easy to understand, engaging to r
         ]
     )
 
-    summary = social_media_agent_information_summary_chain.invoke(
-        {
-            "POST_TO_REPLY": tweet,
-            "OUR_PREVIOUS_POSTS": example_posts_str,
-            "OUR_PAST_REPLIES_AND_POSTS": example_comments_str,
+    ##########################################################
+    # Summarize the retrieved post and comments
+    ##########################################################  
+    content_summary_prompt = hub.pull("content_summary")
+    content_summary_chain = (
+        content_summary_prompt | gpt_4o_mini | xml_parser
+    )
+    content_summary = content_summary_chain.invoke(
+        {   
+            "TOPIC": tweet,
+            "OUR_POSTS": example_posts_str,
+            "OUR_REPLIES": example_comments_str,
         },
         config=config
     )
-    post_analysis = summary["root"][0]["analysis"]
-    relevant_previous_post_info = summary["root"][1]["relevant_previous_post_info"]
-    useful_past_reply_info = summary["root"][2]["useful_past_reply_info"]
+    content_summary_str = content_summary["root"][1]["summary"]
 
-    ideas = viral_social_media_comments_ideas_chain.invoke(
+    ##########################################################
+    # Create the engagement strategy   
+    ##########################################################  
+    engagement_strategy_prompt = hub.pull("engagement_strategy")
+    engagement_strategy_chain = (
+        engagement_strategy_prompt | sonnet_3_5_0_with_fallback | xml_parser
+    )
+    engagement_strategy = engagement_strategy_chain.invoke(
         {
-            "AUDIENCE_INFO": AUDIENCE,
-            "PERSONAL_INFORMATION": PERSONAL_INFORMATION,
-            "PREVIOUS_POSTS": relevant_previous_post_info,
-            "EXAMPLE_COMMENTS": useful_past_reply_info,
+            "OUR_AUDIENCE": OUR_AUDIENCE,
+            "CONTENT_STRATEGY": CONTENT_STRATEGY,
             "INFLUENCER_BIO": f"Name: {user_name}\nBio: {user_description}",
-            "POST_TO_COMMENT_ON": tweet,
-            "POST_ANALYSIS": post_analysis,
-            "COPYWRITING": COPYWRITING_STYLE,
+            "PAST_CONTENT_SUMMARY": content_summary_str,
+            "INFLUENCER_POST": tweet
         },
         config=config
     )
+    engagement_idea = engagement_strategy["root"][1]["reply_outline"]
 
-    final_comment = viral_social_media_comments_refine_chain.invoke(
-        {
-            "AUDIENCE_INFO": AUDIENCE,
-            "PERSONAL_INFORMATION": PERSONAL_INFORMATION,
-            "EXAMPLE_COMMENTS": useful_past_reply_info,
-            "PREVIOUS_POSTS": relevant_previous_post_info,
-            "INFLUENCER_BIO": f"Name: {user_name}\nBio: {user_description}",
-            "POST_TO_REPLY": tweet,
-            "COPYWRITING_STYLE": COPYWRITING_STYLE,
-            "REPLY_IDEAS": ideas,
+    ##########################################################
+    # Create the reply draft   
+    ##########################################################  
+    example_comments_reranked = rerank_results(example_comments, similarity_weight=0.3, engagement_weight=0.7)
+    example_comments_reranked_str = "\n".join(
+        [
+            f"Post: {idx + 1}\n{comment['metadata']['original_post']}\n{'-'*50}\nReply: {idx + 1}\n{comment['metadata']['reply']}\n{'='*50}"
+            for idx, comment in enumerate(example_comments_reranked[:5])
+        ]
+    )
+    reply_drafter_prompt = hub.pull("reply_drafter")
+    reply_drafter_chain = (
+        reply_drafter_prompt | sonnet_3_5_0_with_fallback | xml_parser
+    )
+    reply_draft = reply_drafter_chain.invoke(
+        {   
+            "INFLUENCER_POST": tweet,
+            "REPLY_OUTLINE": engagement_idea,
+            "PAST_POST_REPLIES": example_comments_reranked_str,
         },
         config=config
     )
-    final_reply = final_comment["root"][1]["final_reply"]
-    return final_reply, example_comments[0]
+    final_reply = reply_draft["root"][1]["social_media_reply"]
+
+    # TODO: Search: With this reply we search now similar past replies, important is that they are similar
+    # TODO: AI: Then we use next AI to refine this reply with this new information
+    return final_reply
 
 
 @app.local_entrypoint()
 def test_function():
     logger.info("Starting test function")
     generate_reply.local(
-        tweet="Most businesses fail, not due to lack of effort, but lack of systems.",
-        user_name="MATT GRAY",
-        user_description="The Systems Guy” | Proven systems to grow a profitable audience with organic content. Founder & CEO @founderos",
+        tweet="""The cost of ignorance is easy to quantify but hard to comprehend.
+The cost of not knowing how to get what you want is the value of the thing you want.
+And that education costs time and money.
+You pay with the one you value least.""",
+        user_name="Alex Hormozi",
+        user_description="Day Job: I invest and scale companies at http://Acquisition.com | Co-Owner, Skool. Side Hustle: I show how we do it. Business owners click below ⬇️",
     )

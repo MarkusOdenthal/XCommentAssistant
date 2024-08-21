@@ -69,7 +69,7 @@ class PineconeClient:
             vector=query_vector,
             top_k=top_k,
             include_values=False,
-            include_metadata=True,
+            include_metadata=True
         )
         matches = [
             {"id": match.id, "score": match.score, "metadata": match.metadata}
@@ -79,9 +79,9 @@ class PineconeClient:
 
 
 @app.function()
-def query(index_name: str, q_vector: list) -> list[dict]:
+def query(index_name: str, q_vector: list, top_k: int = 10) -> list[dict]:
     """Query the Pinecone index with a given query and return the results."""
-    return PineconeClient().query_index.remote(index_name, q_vector)
+    return PineconeClient().query_index.remote(index_name, q_vector, top_k)
 
 
 @app.function()
